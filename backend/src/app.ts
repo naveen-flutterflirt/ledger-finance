@@ -36,8 +36,18 @@ export function createApp(): Express {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));
 
+  // Root service check
+  app.get(['/', '/api'], (_req: Request, res: Response) => {
+    res.json({
+      name: 'LedgerPilot Enterprise Accounting API',
+      status: 'active',
+      version: '1.0.0',
+      time: new Date().toISOString(),
+    });
+  });
+
   // Health check endpoint
-  app.get('/health', (_req: Request, res: Response) => {
+  app.get(['/health', '/api/health'], (_req: Request, res: Response) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
   });
 

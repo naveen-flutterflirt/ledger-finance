@@ -32,5 +32,10 @@ async function startServer() {
   }
 }
 
-startServer();
+// In local/standalone environments, listen on port. On Vercel, export app as serverless handler.
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
 
