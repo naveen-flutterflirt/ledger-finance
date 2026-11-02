@@ -23,8 +23,8 @@ const DEMO_USERS = [
 ];
 
 export default function Login() {
-  const [email, setEmail] = useState('owner@fin.local');
-  const [password, setPassword] = useState('Admin@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
