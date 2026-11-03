@@ -71,6 +71,25 @@ export class PayrollController {
     res.json(result);
   }
 
+  static async updateRun(req: Request, res: Response) {
+    const data = z.object({ period: month }).parse(req.body);
+    const result = await PayrollService.updateRun(
+      req.session!.companyId,
+      Number(req.params.id),
+      data.period
+    );
+    res.json(result);
+  }
+
+  static async deleteRun(req: Request, res: Response) {
+    const result = await PayrollService.deleteRun(
+      req.session!.companyId,
+      req.session!.uid,
+      Number(req.params.id)
+    );
+    res.json(result);
+  }
+
   static async getPayslip(req: Request, res: Response) {
     const s = req.session!;
     const payslip = await PayrollService.getPayslip(

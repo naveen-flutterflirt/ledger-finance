@@ -15,6 +15,8 @@ router.get('/payslips/:id', PayrollController.getPayslip);
 router.get('/payroll', requireRole(...PAY_READ), PayrollController.listRuns);
 router.post('/payroll', requireRole(...PAY_WRITE), PayrollController.createRun);
 router.get('/payroll/:id', requireRole(...PAY_READ), PayrollController.getRun);
+router.put('/payroll/:id', requireRole('OWNER', 'HR', 'ACCOUNTANT'), PayrollController.updateRun);
+router.delete('/payroll/:id', requireRole('OWNER', 'HR', 'ACCOUNTANT'), PayrollController.deleteRun);
 router.put('/payroll/:id/slips/:emp', requireRole(...PAY_WRITE), PayrollController.updateSlip);
 router.post('/payroll/:id/post', requireRole(...PAY_WRITE), PayrollController.postRun);
 router.post('/payroll/:id/pay', requireRole('OWNER', 'ACCOUNTANT', 'HR'), PayrollController.payRun);

@@ -3,6 +3,7 @@ import { AccountSelect, Field, Modal, Msg, Btn } from '../../components/common/u
 import { apiCall, useData } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.js';
 import { fmtDate, inr2, todayStr } from '../../utils/format.js';
+import { Upload, Sparkles, CheckCircle2, AlertCircle, FileText, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 
 function parseCsv(text: string) {
   const rows = text
@@ -114,12 +115,19 @@ export default function Banking() {
 
   return (
     <>
-      <div className="topbar">
-        <h1>Bank reconciliation</h1>
-        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
+      <div className="topbar flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 mb-5 border-b border-slate-200">
+        <div>
+          <h1 className="m-0 leading-tight">Bank reconciliation</h1>
+          <p className="text-xs text-slate-500 m-0 mt-0.5">
+            Auto-match and reconcile general ledger bank accounts against imported statements.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
           <select
             value={bank ?? ''}
             onChange={e => setBank(Number(e.target.value))}
+            className="text-sm font-medium"
+            title="Select bank account"
           >
             {banks.map((b: any) => (
               <option key={b.id} value={b.id}>
@@ -132,10 +140,13 @@ export default function Banking() {
             type="date"
             value={asOf}
             onChange={e => setAsOf(e.target.value)}
+            className="text-sm font-medium"
+            title="Reconciliation as-of date"
           />
 
-          <label className="btn m-0 cursor-pointer whitespace-nowrap">
-            ⬆ Import CSV statement
+          <label className="btn m-0 cursor-pointer whitespace-nowrap inline-flex items-center gap-1.5 text-xs font-semibold">
+            <Upload size={14} />
+            <span>Import CSV</span>
             <input
               type="file"
               accept=".csv,text/csv"
@@ -166,7 +177,7 @@ export default function Banking() {
           </label>
 
           <Btn
-            className="btn primary"
+            className="btn primary whitespace-nowrap inline-flex items-center gap-1.5 text-xs font-semibold"
             loading={busyKey === 'automatch'}
             loadingText="Auto-matching..."
             onClick={() =>
@@ -177,7 +188,8 @@ export default function Banking() {
               )
             }
           >
-            Auto-match
+            <Sparkles size={14} />
+            <span>Auto-match</span>
           </Btn>
         </div>
       </div>
@@ -186,106 +198,177 @@ export default function Banking() {
 
       {r && (
         <>
-          <div className="grid g2">
-            <div className="card">
-              <h3>Reconciliation statement as of {fmtDate(r.as_of)}</h3>
-              <table>
-                <tbody>
-                  <tr>
-                    <td>Balance as per books</td>
-                    <td className="num">
-                      <b>{inr2(r.book_balance)}</b>
-                    </td>
-                  </tr>
-                  <tr className="sub">
-                    <td className="indent">Less: deposits recorded, not yet credited by bank</td>
-                    <td className="num">({inr2(r.not_in_bank.deposits)})</td>
-                  </tr>
-                  <tr className="sub">
-                    <td className="indent">Add: cheques/payments issued, not yet presented</td>
-                    <td className="num">{inr2(r.not_in_bank.payments)}</td>
-                  </tr>
-                  <tr className="sub">
-                    <td className="indent">Add: credits in bank, not in books</td>
-                    <td className="num">{inr2(r.not_in_books.deposits)}</td>
-                  </tr>
-                  <tr className="sub">
-                    <td className="indent">Less: debits in bank (charges, etc.), not in books</td>
-                    <td className="num">({inr2(r.not_in_books.withdrawals)})</td>
-                  </tr>
-                  <tr className="tot">
-                    <td>Adjusted book balance</td>
-                    <td className="num">{inr2(r.adjusted_book_balance)}</td>
-                  </tr>
-                  <tr>
-                    <td>Balance as per bank statement</td>
-                    <td className="num">
-                      <b>{r.statement_balance == null ? '—' : inr2(r.statement_balance)}</b>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Difference</td>
-                    <td className={`num ${r.difference === 0 ? 'check' : 'cross'}`}>
-                      {r.difference == null
-                        ? 'import statement to verify'
-                        : r.difference === 0
-                        ? '✔ 0.00 (Reconciled)'
-                        : inr2(r.difference)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="card">
-              <h3>Ledger items not on the statement ({r.unmatched_book.length})</h3>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Entry</th>
-                    <th>Narration</th>
-                    <th className="num">Dr</th>
-                    <th className="num">Cr</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {r.unmatched_book.slice(0, 10).map((b: any) => (
-                    <tr key={b.line_id}>
-                      <td>{fmtDate(b.entry_date)}</td>
-                      <td className="mono">{b.entry_no}</td>
-                      <td>{b.party ?? b.narration}</td>
-                      <td className="num">{b.debit ? inr2(b.debit) : ''}</td>
-                      <td className="num">{b.credit ? inr2(b.credit) : ''}</td>
-                    </tr>
-                  ))}
-                  {!r.unmatched_book.length && (
-                    <tr>
-                      <td colSpan={5} className="muted text-center p-4">
-                        Every ledger item is accounted for on the statement
+          {/* Top 2 Cards: Grid with responsive collapse */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4.5 mb-6 min-w-0 w-full">
+            {/* Left Card: Reconciliation Summary Statement */}
+            <div className="card p-0 overflow-hidden min-w-0 shadow-sm border border-slate-200/90 rounded-xl bg-white flex flex-col">
+              <div className="p-3.5 px-4 border-b border-slate-100 bg-slate-50/80">
+                <h3 className="m-0 text-sm font-bold text-slate-800">
+                  Reconciliation statement as of {fmtDate(r.as_of)}
+                </h3>
+              </div>
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                  <tbody className="divide-y divide-slate-100">
+                    <tr className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-2.5 px-4 font-semibold text-slate-800 whitespace-normal">
+                        Balance as per books
+                      </td>
+                      <td className="py-2.5 px-4 num font-bold text-slate-900 whitespace-nowrap">
+                        {inr2(r.book_balance)}
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                    <tr className="hover:bg-slate-50/60 transition-colors text-slate-600">
+                      <td className="py-2 px-4 pl-7 text-xs whitespace-normal">
+                        Less: deposits recorded, not yet credited by bank
+                      </td>
+                      <td className="py-2 px-4 num text-xs whitespace-nowrap text-slate-600">
+                        ({inr2(r.not_in_bank.deposits)})
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50/60 transition-colors text-slate-600">
+                      <td className="py-2 px-4 pl-7 text-xs whitespace-normal">
+                        Add: cheques/payments issued, not yet presented
+                      </td>
+                      <td className="py-2 px-4 num text-xs whitespace-nowrap text-slate-600">
+                        {inr2(r.not_in_bank.payments)}
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50/60 transition-colors text-slate-600">
+                      <td className="py-2 px-4 pl-7 text-xs whitespace-normal">
+                        Add: credits in bank, not in books
+                      </td>
+                      <td className="py-2 px-4 num text-xs whitespace-nowrap text-slate-600">
+                        {inr2(r.not_in_books.deposits)}
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50/60 transition-colors text-slate-600">
+                      <td className="py-2 px-4 pl-7 text-xs whitespace-normal">
+                        Less: debits in bank (charges, etc.), not in books
+                      </td>
+                      <td className="py-2 px-4 num text-xs whitespace-nowrap text-slate-600">
+                        ({inr2(r.not_in_books.withdrawals)})
+                      </td>
+                    </tr>
+                    <tr className="bg-slate-50 font-bold border-t border-b border-slate-200">
+                      <td className="py-2.5 px-4 text-slate-900 whitespace-normal">
+                        Adjusted book balance
+                      </td>
+                      <td className="py-2.5 px-4 num font-bold text-slate-900 whitespace-nowrap">
+                        {inr2(r.adjusted_book_balance)}
+                      </td>
+                    </tr>
+                    <tr className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-2.5 px-4 font-semibold text-slate-800 whitespace-normal">
+                        Balance as per bank statement
+                      </td>
+                      <td className="py-2.5 px-4 num font-bold text-slate-900 whitespace-nowrap">
+                        {r.statement_balance == null ? '—' : inr2(r.statement_balance)}
+                      </td>
+                    </tr>
+                    <tr className={r.difference === 0 ? 'bg-emerald-50/70' : 'bg-rose-50/70'}>
+                      <td className="py-2.5 px-4 font-bold text-slate-900 whitespace-normal">
+                        Difference
+                      </td>
+                      <td className="py-2.5 px-4 num font-bold whitespace-nowrap">
+                        {r.difference == null ? (
+                          <span className="text-slate-400 text-xs">Import statement to verify</span>
+                        ) : r.difference === 0 ? (
+                          <span className="text-emerald-700 font-bold inline-flex items-center gap-1">
+                            ✔ 0.00 (Reconciled)
+                          </span>
+                        ) : (
+                          <span className="text-rose-600 font-bold">{inr2(r.difference)}</span>
+                        )}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Right Card: Ledger Items Not on the Statement */}
+            <div className="card p-0 overflow-hidden min-w-0 shadow-sm border border-slate-200/90 rounded-xl bg-white flex flex-col">
+              <div className="p-3.5 px-4 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between">
+                <h3 className="m-0 text-sm font-bold text-slate-800">
+                  Ledger items not on the statement ({r.unmatched_book.length})
+                </h3>
+                {r.unmatched_book.length > 0 && (
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                    {r.unmatched_book.length} to clear
+                  </span>
+                )}
+              </div>
+              <div className="overflow-x-auto w-full max-w-full">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                      <th className="py-2 px-3 whitespace-nowrap">Date</th>
+                      <th className="py-2 px-2.5 whitespace-nowrap">Entry</th>
+                      <th className="py-2 px-3 whitespace-nowrap">Narration</th>
+                      <th className="py-2 px-3 num whitespace-nowrap">Dr</th>
+                      <th className="py-2 px-3 num whitespace-nowrap">Cr</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {r.unmatched_book.slice(0, 10).map((b: any) => (
+                      <tr key={b.line_id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-2 px-3 whitespace-nowrap text-slate-600">
+                          {fmtDate(b.entry_date)}
+                        </td>
+                        <td className="py-2 px-2.5 mono font-semibold text-slate-800 whitespace-nowrap">
+                          {b.entry_no}
+                        </td>
+                        <td
+                          className="py-2 px-3 max-w-[150px] sm:max-w-[200px] truncate text-slate-700"
+                          title={b.party ?? b.narration}
+                        >
+                          {b.party ?? b.narration}
+                        </td>
+                        <td className="py-2 px-3 num whitespace-nowrap text-slate-900 font-medium">
+                          {b.debit ? inr2(b.debit) : '—'}
+                        </td>
+                        <td className="py-2 px-3 num whitespace-nowrap text-slate-900 font-medium">
+                          {b.credit ? inr2(b.credit) : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                    {!r.unmatched_book.length && (
+                      <tr>
+                        <td colSpan={5} className="muted text-center py-8 text-sm">
+                          ✨ Every ledger item is accounted for on the statement.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
-          <div className="card p-0 overflow-x-auto">
-            <div className="row p-3.5">
-              <h3 className="m-0">
+          {/* Bottom Card: Bank Statement Table */}
+          <div className="card p-0 overflow-hidden min-w-0 shadow-sm border border-slate-200/90 rounded-xl bg-white w-full max-w-full">
+            <div className="flex items-center justify-between flex-wrap gap-2.5 p-3.5 px-4 border-b border-slate-100 bg-slate-50/60">
+              <h3 className="m-0 text-sm font-bold text-slate-800">
                 Bank statement · {r.matched} matched, {r.unmatched} to review
               </h3>
-              <div className="spacer" />
-              <div className="tabs">
+              <div className="tabs flex items-center gap-1 bg-slate-200/80 p-0.5 rounded-lg">
                 <button
-                  className={show === 'unmatched' ? 'on' : ''}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+                    show === 'unmatched'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                   onClick={() => setShow('unmatched')}
                 >
                   To review ({r.unmatched})
                 </button>
                 <button
-                  className={show === 'all' ? 'on' : ''}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+                    show === 'all'
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
                   onClick={() => setShow('all')}
                 >
                   All statement lines
@@ -293,152 +376,186 @@ export default function Banking() {
               </div>
             </div>
 
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Description</th>
-                  <th>Reference</th>
-                  <th className="num">Withdrawal</th>
-                  <th className="num">Deposit</th>
-                  <th className="num">Balance</th>
-                  <th>Matched with</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {r.statement
-                  .filter((s: any) => show === 'all' || !s.matched_line_id)
-                  .map((s: any) => (
-                    <tr key={s.id}>
-                      <td>{fmtDate(s.txn_date)}</td>
-                      <td>{s.description}</td>
-                      <td className="mono">{s.reference ?? '—'}</td>
-                      <td className="num out">{s.withdrawal ? inr2(s.withdrawal) : ''}</td>
-                      <td className="num in">{s.deposit ? inr2(s.deposit) : ''}</td>
-                      <td className="num">{s.balance != null ? inr2(s.balance) : ''}</td>
-                      <td>
-                        {s.matched_line_id ? (
-                          <span className="check">✔ {s.entry_no}</span>
-                        ) : (
-                          <span className="badge s-SUBMITTED">unmatched</span>
-                        )}
-                      </td>
-                      <td className="right whitespace-nowrap">
-                        {s.matched_line_id ? (
-                          <Btn
-                            className="btn sm"
-                            loading={busyKey === `unmatch_${s.id}`}
-                            loadingText="Unmatching..."
-                            onClick={() =>
-                              run(
-                                `unmatch_${s.id}`,
-                                () =>
-                                  apiCall(`/api/bank/statement/${s.id}/match`, 'POST', {
-                                    line_id: null,
-                                  }),
-                                () => 'Transaction unmatched from ledger'
-                              )
-                            }
-                          >
-                            Unmatch
-                          </Btn>
-                        ) : (
-                          <>
-                            <button
-                              className="btn sm"
-                              onClick={async () => {
-                                setPick(s);
-                                setCands(
-                                  await apiCall(
-                                    `/api/bank/statement/${s.id}/candidates`
-                                  )
-                                );
-                              }}
-                            >
-                              Match…
-                            </button>{' '}
-                            <button
-                              className="btn sm green"
+            <div className="overflow-x-auto w-full max-w-full">
+              <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-2.5 px-3.5 whitespace-nowrap">Date</th>
+                    <th className="py-2.5 px-3 whitespace-nowrap">Description</th>
+                    <th className="py-2.5 px-3 whitespace-nowrap">Reference</th>
+                    <th className="py-2.5 px-3 num whitespace-nowrap">Withdrawal</th>
+                    <th className="py-2.5 px-3 num whitespace-nowrap">Deposit</th>
+                    <th className="py-2.5 px-3 num whitespace-nowrap">Balance</th>
+                    <th className="py-2.5 px-3 whitespace-nowrap">Matched With</th>
+                    <th className="py-2.5 px-3.5 text-right whitespace-nowrap">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {r.statement
+                    .filter((s: any) => show === 'all' || !s.matched_line_id)
+                    .map((s: any) => (
+                      <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-2.5 px-3.5 whitespace-nowrap text-slate-600">
+                          {fmtDate(s.txn_date)}
+                        </td>
+                        <td
+                          className="py-2.5 px-3 max-w-[180px] sm:max-w-[280px] truncate text-slate-800 font-medium"
+                          title={s.description}
+                        >
+                          {s.description}
+                        </td>
+                        <td className="py-2.5 px-3 mono text-xs text-slate-500 whitespace-nowrap">
+                          {s.reference ?? '—'}
+                        </td>
+                        <td className="py-2.5 px-3 num out font-medium text-rose-600 whitespace-nowrap">
+                          {s.withdrawal ? inr2(s.withdrawal) : '—'}
+                        </td>
+                        <td className="py-2.5 px-3 num in font-medium text-emerald-600 whitespace-nowrap">
+                          {s.deposit ? inr2(s.deposit) : '—'}
+                        </td>
+                        <td className="py-2.5 px-3 num font-semibold text-slate-800 whitespace-nowrap">
+                          {s.balance != null ? inr2(s.balance) : '—'}
+                        </td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">
+                          {s.matched_line_id ? (
+                            <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded text-xs">
+                              ✔ {s.entry_no}
+                            </span>
+                          ) : (
+                            <span className="badge s-SUBMITTED text-xs">unmatched</span>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-3.5 text-right whitespace-nowrap">
+                          {s.matched_line_id ? (
+                            <Btn
+                              className="btn sm ghost-red px-2.5 py-1 text-xs"
+                              loading={busyKey === `unmatch_${s.id}`}
+                              loadingText="Unmatching..."
                               onClick={() =>
-                                setBook({
-                                  s,
-                                  account_id: '',
-                                  narration: s.description,
-                                })
+                                run(
+                                  `unmatch_${s.id}`,
+                                  () =>
+                                    apiCall(`/api/bank/statement/${s.id}/match`, 'POST', {
+                                      line_id: null,
+                                    }),
+                                  () => 'Transaction unmatched from ledger'
+                                )
                               }
                             >
-                              Book it
-                            </button>
-                          </>
-                        )}
+                              Unmatch
+                            </Btn>
+                          ) : (
+                            <div className="inline-flex items-center justify-end gap-1.5">
+                              <button
+                                className="btn sm primary px-2.5 py-1 text-xs font-semibold"
+                                onClick={async () => {
+                                  setPick(s);
+                                  setCands(
+                                    await apiCall(
+                                      `/api/bank/statement/${s.id}/candidates`
+                                    )
+                                  );
+                                }}
+                              >
+                                Match…
+                              </button>
+                              <button
+                                className="btn sm green px-2.5 py-1 text-xs font-semibold"
+                                onClick={() =>
+                                  setBook({
+                                    s,
+                                    account_id: '',
+                                    narration: s.description,
+                                  })
+                                }
+                              >
+                                Book it
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  {r.statement.filter((s: any) => show === 'all' || !s.matched_line_id).length === 0 && (
+                    <tr>
+                      <td colSpan={8} className="muted text-center py-10 text-sm">
+                        🎉 No statement lines {show === 'unmatched' ? 'pending review' : 'found'}.
                       </td>
                     </tr>
-                  ))}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}
 
+      {/* Match Candidates Modal */}
       {pick && (
         <Modal
           title={`Match ${inr2(pick.deposit || pick.withdrawal)} · ${fmtDate(pick.txn_date)}`}
           onClose={() => setPick(null)}
         >
-          <p className="muted">
+          <p className="muted text-xs mb-3">
             Unmatched ledger transactions on this bank matching this exact amount:
           </p>
-          <table>
-            <tbody>
-              {cands.map(c => (
-                <tr key={c.line_id}>
-                  <td>{fmtDate(c.entry_date)}</td>
-                  <td className="mono">{c.entry_no}</td>
-                  <td>{c.party ?? c.narration}</td>
-                  <td>
-                    <Btn
-                      className="btn sm primary"
-                      loading={busyKey === `match_${c.line_id}`}
-                      loadingText="Matching..."
-                      onClick={async () => {
-                        await run(
-                          `match_${c.line_id}`,
-                          () =>
-                            apiCall(`/api/bank/statement/${pick.id}/match`, 'POST', {
-                              line_id: c.line_id,
-                            }),
-                          () => 'Matched successfully'
-                        );
-                        setPick(null);
-                      }}
-                    >
-                      Match
-                    </Btn>
-                  </td>
-                </tr>
-              ))}
-              {!cands.length && (
-                <tr>
-                  <td colSpan={4} className="muted text-center p-4">
-                    No candidates found within ±5 days. Use “Book it” to record it.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto max-h-[60vh]">
+            <table className="w-full text-left border-collapse text-xs sm:text-sm">
+              <tbody className="divide-y divide-slate-100">
+                {cands.map(c => (
+                  <tr key={c.line_id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-2.5 px-3 whitespace-nowrap text-slate-600">{fmtDate(c.entry_date)}</td>
+                    <td className="py-2.5 px-3 mono font-semibold text-slate-800 whitespace-nowrap">{c.entry_no}</td>
+                    <td className="py-2.5 px-3 max-w-[220px] truncate text-slate-700">{c.party ?? c.narration}</td>
+                    <td className="py-2.5 px-3 text-right">
+                      <Btn
+                        className="btn sm primary px-3 py-1 text-xs"
+                        loading={busyKey === `match_${c.line_id}`}
+                        loadingText="Matching..."
+                        onClick={async () => {
+                          await run(
+                            `match_${c.line_id}`,
+                            () =>
+                              apiCall(`/api/bank/statement/${pick.id}/match`, 'POST', {
+                                line_id: c.line_id,
+                              }),
+                            () => 'Matched successfully'
+                          );
+                          setPick(null);
+                        }}
+                      >
+                        Match
+                      </Btn>
+                    </td>
+                  </tr>
+                ))}
+                {!cands.length && (
+                  <tr>
+                    <td colSpan={4} className="muted text-center py-8 text-sm">
+                      No candidates found within ±5 days. Use “Book it” to record it directly into your ledger.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </Modal>
       )}
 
+      {/* Book It Modal */}
       {book && lk && (
         <Modal title="Record bank statement line into books" onClose={() => setBook(null)}>
-          <p className="muted">
-            {book.s.description} ·{' '}
-            {book.s.withdrawal ? `withdrawal ${inr2(book.s.withdrawal)}` : `deposit ${inr2(book.s.deposit)}`}
-            . Automatically generates a balanced journal and marks it reconciled.
-          </p>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-700 mb-4 leading-relaxed">
+            <strong>{book.s.description}</strong> ·{' '}
+            <span className="font-semibold text-slate-900">
+              {book.s.withdrawal ? `Withdrawal ${inr2(book.s.withdrawal)}` : `Deposit ${inr2(book.s.deposit)}`}
+            </span>
+            <div className="text-slate-500 mt-1">
+              Automatically generates a balanced ledger journal and marks the bank transaction reconciled.
+            </div>
+          </div>
           <div className="form">
-            <Field label="Target account (e.g. Bank charges, Interest income)">
+            <Field label="Target account (e.g. Bank charges, Interest income) *">
               <AccountSelect
                 accounts={lk.accounts}
                 filter={(a: any) => a.id !== bank}
@@ -447,16 +564,20 @@ export default function Banking() {
               />
             </Field>
 
-            <Field label="Narration" wide>
+            <Field label="Narration *" wide>
               <input
                 value={book.narration}
                 onChange={e => setBook({ ...book, narration: e.target.value })}
+                required
               />
             </Field>
           </div>
-          <div className="row justify-end mt-5">
+          <div className="row justify-end mt-5 gap-2">
+            <button type="button" className="btn" onClick={() => setBook(null)}>
+              Cancel
+            </button>
             <Btn
-              className="btn green"
+              className="btn green px-4 py-1.5 text-xs font-semibold"
               disabled={!book.account_id}
               loading={busyKey === 'book_and_match'}
               loadingText="Booking & matching..."
@@ -473,7 +594,7 @@ export default function Banking() {
                 setBook(null);
               }}
             >
-              Book &amp; match
+              Book &amp; Match
             </Btn>
           </div>
         </Modal>
@@ -481,4 +602,3 @@ export default function Banking() {
     </>
   );
 }
-

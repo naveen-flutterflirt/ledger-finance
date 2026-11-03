@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Msg, StatusBadge, Btn } from '../../components/common/ui.js';
 import { apiCall, useData } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.js';
 import { fmtDate, inr2, todayStr } from '../../utils/format.js';
 import { DocViewSkeleton } from '../../components/common/Skeleton.js';
-import { BookText, CheckCircle2, ArrowRight, Banknote, ShieldAlert, CheckCircle, Briefcase } from 'lucide-react';
+import { BookText, CheckCircle2, ArrowRight, Banknote, ShieldAlert, CheckCircle, Briefcase, Trash2 } from 'lucide-react';
 import { KpiCard } from '../../components/common/KpiCard.js';
 
 export default function PayrollRun() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data: r, reload, loading } = useData<any>(`/api/payroll/${id}`);
   const { data: lk } = useData<any>('/api/lookups');
 
@@ -75,20 +76,52 @@ export default function PayrollRun() {
           </Link>
 
           {draft && (
-            <Btn
-              className="btn primary"
-              loading={busyKey === 'post_ledger'}
-              loadingText="Posting salary journal..."
-              onClick={() =>
-                run(
-                  'post_ledger',
-                  () => apiCall(`/api/payroll/${r.id}/post`, 'POST'),
-                  'Salary journal posted to ledger'
-                )
-              }
-            >
-              Post to ledger
-            </Btn>
+            <>
+              <Btn
+                className="btn primary"
+                loading={busyKey === 'post_ledger'}
+                loadingText="Posting salary journal..."
+                onClick={() =>
+                  run(
+                    'post_ledger',
+                    () => apiCall(`/api/payroll/${r.id}/post`, 'POST'),
+                    'Salary journal posted to ledger'
+                  )
+                }
+              >
+                Post to ledger
+              </Btn>
+
+              <Btn
+                className="btn ghost-red"
+                loading={busyKey === 'delete_draft'}
+                loadingText="Deleting..."
+                onClick={async () => {
+                  if (
+                    window.confirm(
+                      `Delete draft payroll run #${r.id} for ${new Date(
+                        r.period + 'T00:00:00'
+                      ).toLocaleDateString('en-IN', {
+                        month: 'long',
+                        year: 'numeric',
+                      })}? All draft employee payslips will be permanently removed.`
+                    )
+                  ) {
+                    setBusyKey('delete_draft');
+                    try {
+                      await apiCall(`/api/payroll/${r.id}`, 'DELETE');
+                      toast.success(`Draft payroll run #${r.id} deleted`);
+                      navigate('/payroll');
+                    } catch (x: any) {
+                      toast.error(x.message || 'Failed to delete payroll run');
+                      setBusyKey(null);
+                    }
+                  }
+                }}
+              >
+                <Trash2 size={14} /> Delete Draft
+              </Btn>
+            </>
           )}
 
           {r.status === 'POSTED' && lk && (

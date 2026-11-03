@@ -294,6 +294,103 @@ export class PayrollService {
     });
   }
 
+  static async updateRun(companyId: number, runId: number, newPeriod: string) {
+    return tx(async c => {
+      const { rows: [run] } = await c.query(
+        `SELECT * FROM payroll_runs WHERE id = $1 AND company_id = $2 FOR UPDATE`,
+        [runId, companyId]
+      );
+      if (!run) throw new HttpError(404, 'Payroll run not found');
+      if (run.status !== 'DRAFT') {
+        throw new HttpError(422, 'Only draft payroll runs can be edited');
+      }
+
+      const p = newPeriod + '-01';
+      const end = `${newPeriod}-${String(this.daysIn(newPeriod)).padStart(2, '0')}`;
+
+      // Check if another run already exists for this new period
+      const { rows: [conflict] } = await c.query(
+        `SELECT id FROM payroll_runs WHERE company_id = $1 AND period = $2 AND id <> $3`,
+        [companyId, p, runId]
+      );
+      if (conflict) {
+        throw new HttpError(
+          409,
+          `Another payroll run already exists for ${newPeriod} (Run #${conflict.id})`
+        );
+      }
+
+      // Update the period
+      await c.query(`UPDATE payroll_runs SET period = $1 WHERE id = $2`, [p, runId]);
+
+      // Delete existing draft payslips to re-compute for the new period
+      await c.query(`DELETE FROM payslips WHERE run_id = $1`, [runId]);
+
+      const s = await this.getSettings(c, companyId);
+      const { rows: emps } = await c.query(
+        `SELECT * FROM employees 
+         WHERE company_id = $1 AND active = true AND join_date <= $3 
+           AND (exit_date IS NULL OR exit_date >= $2) 
+         ORDER BY emp_code`,
+        [companyId, p, end]
+      );
+
+      if (!emps.length) {
+        throw new HttpError(422, `No active employees found for period ${newPeriod}`);
+      }
+
+      const D = this.daysIn(newPeriod);
+      for (const e of emps) {
+        const startDay = e.join_date > p ? +e.join_date.slice(8) : 1;
+        const endDay = e.exit_date && e.exit_date < end ? +e.exit_date.slice(8) : D;
+        const lop = startDay - 1 + (D - endDay);
+
+        await this.writeSlip(c, runId, e, this.computeSlip(e, s, D, lop, 0, 0));
+      }
+
+      await this.refreshTotals(c, runId);
+      return { ok: true, id: runId, period: p };
+    });
+  }
+
+  static async deleteRun(companyId: number, uid: number, runId: number) {
+    return tx(async c => {
+      const { rows: [run] } = await c.query(
+        `SELECT * FROM payroll_runs WHERE id = $1 AND company_id = $2 FOR UPDATE`,
+        [runId, companyId]
+      );
+      if (!run) throw new HttpError(404, 'Payroll run not found');
+
+      if (run.status === 'PAID') {
+        throw new HttpError(
+          422,
+          'Paid payroll runs cannot be deleted directly because salaries have already been disbursed via bank. Reverse payment entries first.'
+        );
+      }
+
+      // If run was POSTED, reverse the ledger journal entry first to maintain double-entry integrity
+      if (run.status === 'POSTED' && run.journal_entry_id) {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        await LedgerService.reverseJournal(
+          c,
+          companyId,
+          uid,
+          Number(run.journal_entry_id),
+          todayStr,
+          `Reversal on payroll run deletion (Run #${runId}, Period: ${run.period})`
+        );
+      }
+
+      // Delete payslips for this run
+      await c.query(`DELETE FROM payslips WHERE run_id = $1`, [runId]);
+
+      // Delete the payroll run
+      await c.query(`DELETE FROM payroll_runs WHERE id = $1 AND company_id = $2`, [runId, companyId]);
+
+      return { ok: true, id: runId, period: run.period };
+    });
+  }
+
   static async listRuns(companyId: number) {
     return query(
       `SELECT r.*, (SELECT COUNT(*) FROM payslips WHERE run_id = r.id) AS employees 
