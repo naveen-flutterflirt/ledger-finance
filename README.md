@@ -164,25 +164,7 @@ npm run dev
 ```
 The frontend application will be accessible at `http://localhost:3000`.
 
----
 
-## Local Development Seed Accounts
-
-For local testing and evaluation, the following pre-configured mock accounts are created by `backend/db/seed.sql`:
-
-> **Note**: These accounts are strictly for local sandbox testing. All default seed fixtures use password: `Admin@123`
-
-| Role | Test Email | Responsibilities & Access |
-| :--- | :--- | :--- |
-| **Owner** | `owner@fin.local` | Full platform access, company configuration, period closing, user management |
-| **Accountant** | `accounts@fin.local` | Invoices, credit notes, payment vouchers, journals, BRS, asset register, GST reports |
-| **HR Manager** | `hr@fin.local` | Employee directory, monthly payroll execution, salary disbursement |
-| **Auditor** | `auditor@fin.local` | Read-only inspection of ledgers, trial balance, and financial statements |
-| **Employee** | `employee@fin.local` | Self-service portal to view and download personal payslips |
-
----
-
-## Build & Production Deployment
 
 ### Backend Production Build
 ```bash
