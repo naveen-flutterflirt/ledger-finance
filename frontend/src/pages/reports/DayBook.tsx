@@ -16,7 +16,6 @@ export default function DayBook() {
           type="date"
           value={date}
           onChange={e => setDate(e.target.value)}
-          style={{ width: 170 }}
         />
       </div>
 
@@ -32,7 +31,7 @@ export default function DayBook() {
             <span className="muted">{e.narration}</span>
           </div>
 
-          <table style={{ marginTop: 10 }}>
+          <table className="mt-2.5">
             <tbody>
               {e.lines.map((l: any, i: number) => (
                 <tr key={i}>
@@ -51,7 +50,7 @@ export default function DayBook() {
 
       {data && !data.length && (
         <div className="card">
-          <p className="muted" style={{ textAlign: 'center', padding: '16px', margin: 0 }}>
+          <p className="muted text-center p-4 m-0">
             No journal entries recorded on this date
           </p>
         </div>

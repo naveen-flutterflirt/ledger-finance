@@ -45,15 +45,14 @@ export default function Assets() {
     <>
       <div className="topbar">
         <h1>Fixed assets &amp; depreciation</h1>
-        <div className="row">
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
           <input
             type="month"
             value={period}
             onChange={e => setPeriod(e.target.value)}
-            style={{ width: 160 }}
           />
           <Btn
-            className="btn"
+            className="btn whitespace-nowrap"
             loading={busyKey === 'depreciate'}
             loadingText="Calculating depreciation..."
             onClick={() =>
@@ -70,7 +69,7 @@ export default function Assets() {
             Run depreciation
           </Btn>
           <button
-            className="btn primary"
+            className="btn primary whitespace-nowrap"
             onClick={() =>
               setF({
                 method: 'SLM',
@@ -102,7 +101,7 @@ export default function Assets() {
         </div>
       </div>
 
-      <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="card p-0 overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -120,16 +119,14 @@ export default function Assets() {
           </thead>
           <tbody>
             {data?.map(a => (
-              <tr key={a.id} style={{ opacity: a.status === 'DISPOSED' ? 0.55 : 1 }}>
+              <tr key={a.id} className={a.status === 'DISPOSED' ? 'opacity-55' : ''}>
                 <td>
-                  <b>{a.name}</b>
-                  <div className="muted mono">{a.asset_no}</div>
+                  <span className="font-semibold">{a.name}</span>
+                  <span className="muted mono text-xs ml-1.5">({a.asset_no})</span>
                 </td>
                 <td>
-                  {a.category}
-                  <div className="muted" style={{ fontSize: 11 }}>
-                    {a.asset_account}
-                  </div>
+                  <span>{a.category}</span>
+                  <span className="muted text-xs ml-1.5">· {a.asset_account}</span>
                 </td>
                 <td>{fmtDate(a.put_to_use_date)}</td>
                 <td>
@@ -148,7 +145,7 @@ export default function Assets() {
                     {a.status}
                   </span>
                 </td>
-                <td style={{ whiteSpace: 'nowrap' }}>
+                <td className="whitespace-nowrap">
                   <button
                     className="btn sm"
                     onClick={async () =>
@@ -172,7 +169,7 @@ export default function Assets() {
             ))}
             {data && !data.length && (
               <tr>
-                <td colSpan={10} className="muted" style={{ textAlign: 'center', padding: '24px' }}>
+                <td colSpan={10} className="muted text-center p-6">
                   No fixed assets registered
                 </td>
               </tr>
@@ -341,7 +338,7 @@ export default function Assets() {
             )}
           </div>
 
-          <div className="row" style={{ justifyContent: 'flex-end', marginTop: 20 }}>
+          <div className="row justify-end mt-5">
             <Btn
               className="btn primary"
               loading={busyKey === 'save_asset'}
@@ -400,7 +397,7 @@ export default function Assets() {
             </Field>
           </div>
 
-          <div className="row" style={{ justifyContent: 'flex-end', marginTop: 20 }}>
+          <div className="row justify-end mt-5">
             <Btn
               className="btn red"
               loading={busyKey === 'dispose_asset'}

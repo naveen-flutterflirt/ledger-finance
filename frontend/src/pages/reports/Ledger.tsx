@@ -109,8 +109,8 @@ export default function Ledger() {
               : 'Vendor purchase bills, payment disbursements & outstanding payables (AP)'}
           </span>
         </div>
-        <div className="row no-print">
-          <div className="tabs">
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0 no-print">
+          <div className="tabs shrink-0">
             <button
               type="button"
               className={mode === 'account' ? 'on' : ''}
@@ -143,13 +143,13 @@ export default function Ledger() {
               Vendors
             </button>
           </div>
-          <button type="button" className="btn" onClick={() => window.print()}>
+          <button type="button" className="btn whitespace-nowrap" onClick={() => window.print()}>
             Print / PDF
           </button>
         </div>
       </div>
 
-      <div className="card form no-print" style={{ marginBottom: 16 }}>
+      <div className="card form no-print mb-4">
         {mode === 'account' && (
           <div>
             <label>Select account</label>
@@ -169,7 +169,7 @@ export default function Ledger() {
             <select
               value={String(customerParty || '')}
               onChange={e => setCustomerParty(e.target.value)}
-              style={{ width: '100%' }}
+              className="w-full"
             >
               <option value="">— Choose customer —</option>
               {customers.map((p: any) => (
@@ -187,7 +187,7 @@ export default function Ledger() {
             <select
               value={String(vendorParty || '')}
               onChange={e => setVendorParty(e.target.value)}
-              style={{ width: '100%' }}
+              className="w-full"
             >
               <option value="">— Choose vendor —</option>
               {vendors.map((p: any) => (
@@ -251,36 +251,25 @@ export default function Ledger() {
       )}
 
       {d && (
-        <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
-          <div
-            style={{
-              padding: '16px 20px',
-              borderBottom: '1px solid var(--line)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              background: '#fafbfe',
-              flexWrap: 'wrap',
-              gap: 10,
-            }}
-          >
+        <div className="card p-0 overflow-x-auto">
+          <div className="p-4 sm:px-5 border-b border-surface-line flex items-center justify-between bg-slate-50/70 flex-wrap gap-2.5">
             <div>
-              <b style={{ fontSize: 16, color: 'var(--navy)' }}>
+              <b className="text-base text-navy font-bold">
                 {d.account
                   ? `${d.account.code} · ${d.account.name}`
                   : `${d.party?.name} (${d.party?.kind === 'VENDOR' ? 'Vendor / Supplier' : 'Customer'})`}
               </b>
-              <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+              <div className="muted text-xs mt-0.5">
                 Statement period: {fmtDate(d.from)} to {fmtDate(d.to)}
                 {d.party?.gstin && ` · GSTIN: ${d.party.gstin}`}
                 {d.party?.credit_days ? ` · Credit Terms: ${d.party.credit_days} days` : ''}
               </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <span className="muted" style={{ fontSize: 12 }}>
+            <div className="text-right">
+              <span className="muted text-xs">
                 {mode === 'customer' ? 'Total Outstanding (Receivable): ' : mode === 'vendor' ? 'Total Payable (Due): ' : 'Net Closing Balance: '}
               </span>
-              <b style={{ fontSize: 16, color: d.closing < 0 ? 'var(--red)' : '#0b7d6b' }}>
+              <b className={`text-base font-bold ${d.closing < 0 ? 'text-red-600' : 'text-teal'}`}>
                 {drcr(d.closing)}
               </b>
             </div>
@@ -299,7 +288,7 @@ export default function Ledger() {
               </tr>
             </thead>
             <tbody>
-              <tr className="grp" style={{ background: '#f8fafd' }}>
+              <tr className="grp bg-slate-50/80">
                 <td colSpan={6}>
                   <b>Opening balance</b> (as of {fmtDate(d.from)})
                 </td>
@@ -328,21 +317,21 @@ export default function Ledger() {
                   </td>
                   <td className="num">{r.debit ? inr2(r.debit) : '—'}</td>
                   <td className="num">{r.credit ? inr2(r.credit) : '—'}</td>
-                  <td className="num" style={{ fontWeight: 600 }}>
+                  <td className="num font-semibold">
                     {drcr(r.balance)}
                   </td>
                 </tr>
               ))}
               {d.rows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="muted" style={{ textAlign: 'center', padding: '24px' }}>
+                  <td colSpan={7} className="muted text-center p-6">
                     No transactions found for this period.
                   </td>
                 </tr>
               )}
             </tbody>
             <tfoot>
-              <tr className="tot" style={{ background: '#fafbfe' }}>
+              <tr className="tot bg-slate-50/60">
                 <td colSpan={6}>
                   <b>Closing balance</b> (as of {fmtDate(d.to)})
                 </td>

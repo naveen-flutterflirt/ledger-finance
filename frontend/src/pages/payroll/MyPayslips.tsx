@@ -17,21 +17,21 @@ export default function MyPayslips() {
         </div>
       </div>
 
-      <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
-        <table>
-          <thead>
-            <tr>
-              <th>Month</th>
-              <th className="num">Gross pay</th>
-              <th className="num">Deductions</th>
-              <th className="num">Net pay</th>
-              <th>Status</th>
-              <th className="right">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              Array.from({ length: 4 }).map((_, r) => (
+      {loading ? (
+        <div className="card p-0 overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th className="num">Gross pay</th>
+                <th className="num">Deductions</th>
+                <th className="num">Net pay</th>
+                <th>Status</th>
+                <th className="right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 4 }).map((_, r) => (
                 <tr key={r}>
                   <td><Skeleton width="60%" height={15} /></td>
                   <td className="num"><Skeleton width="50%" height={15} /></td>
@@ -40,9 +40,37 @@ export default function MyPayslips() {
                   <td><Skeleton width={60} height={20} borderRadius={999} /></td>
                   <td className="right"><Skeleton width={70} height={26} borderRadius={4} /></td>
                 </tr>
-              ))
-            ) : (
-              data?.map(p => (
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : !data || data.length === 0 ? (
+        <div className="card text-center p-12 flex flex-col items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 mb-4 shadow-sm border border-slate-200">
+            <Wallet size={26} />
+          </div>
+          <div className="text-lg font-bold text-navy mb-1.5">
+            No payslips found for your login
+          </div>
+          <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+            This page displays your personal salary slips. If you draw a monthly salary, link your login user account to an Employee profile under <Link to="/payroll" className="text-indigo-600 font-semibold hover:underline">Payroll &rarr; Employees</Link>.
+          </p>
+        </div>
+      ) : (
+        <div className="card p-0 overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th className="num">Gross pay</th>
+                <th className="num">Deductions</th>
+                <th className="num">Net pay</th>
+                <th>Status</th>
+                <th className="right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map(p => (
                 <tr key={p.id}>
                   <td>
                     <Link to={`/payslips/${p.id}`}>
@@ -70,26 +98,11 @@ export default function MyPayslips() {
                     </Link>
                   </td>
                 </tr>
-              ))
-            )}
-            {data && !data.length && !loading && (
-              <tr>
-                <td colSpan={6}>
-                  <div className="empty-state">
-                    <div className="empty-state-icon">
-                      <Wallet size={22} />
-                    </div>
-                    <div className="empty-state-title">No payslips found for your login</div>
-                    <div className="empty-state-sub">
-                      This page displays your personal salary slips. If you draw a monthly salary, link your login user account to an Employee profile under <strong>Payroll → Employees</strong>.
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 }

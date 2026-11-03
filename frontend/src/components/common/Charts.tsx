@@ -106,13 +106,13 @@ export function CategoryBars({
   return (
     <div>
       {rows.map(r => (
-        <div key={r.category} style={{ marginBottom: 12 }}>
+        <div key={r.category} className="mb-3">
           <div className="row">
             <span className="dot" style={{ background: r.color ?? '#3B4FE0' }} />
             {r.category}
             <div className="spacer" />
             <b>{inr(r.amount)}</b>
-            <span className="muted" style={{ width: 48, textAlign: 'right' }}>
+            <span className="muted w-12 text-right">
               {total ? Math.round((r.amount / total) * 100) : 0}%
             </span>
           </div>

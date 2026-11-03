@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Field, Modal, Msg, Btn } from '../../components/common/ui.js';
+import { Field, Modal, Msg, Btn, StatusBadge } from '../../components/common/ui.js';
 import { apiCall, useData } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.js';
 import { fmtDate, inr2, todayStr } from '../../utils/format.js';
@@ -87,8 +87,8 @@ export default function Vouchers() {
     <>
       <div className="topbar">
         <h1>{rec ? 'Receipts from customers' : 'Payments to vendors'}</h1>
-        <div className="row">
-          <div className="tabs">
+        <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
+          <div className="tabs shrink-0">
             <button
               className={kind === 'RECEIPT' ? 'on' : ''}
               onClick={() => setSp({ kind: 'RECEIPT' })}
@@ -104,7 +104,7 @@ export default function Vouchers() {
           </div>
 
           <button
-            className="btn primary"
+            className="btn primary whitespace-nowrap"
             onClick={() =>
               setF({
                 voucher_date: todayStr(),
@@ -121,7 +121,7 @@ export default function Vouchers() {
 
       <Msg err={err || error} ok={ok} />
 
-      <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="card p-0 overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -139,23 +139,23 @@ export default function Vouchers() {
           </thead>
           <tbody>
             {data?.map(v => (
-              <tr key={v.id} style={{ opacity: v.status === 'CANCELLED' ? 0.5 : 1 }}>
+              <tr key={v.id} className={v.status === 'CANCELLED' ? 'opacity-50' : ''}>
                 <td>
-                  <b>{v.voucher_no}</b>
+                  <b className="whitespace-nowrap">{v.voucher_no}</b>
                 </td>
                 <td>{fmtDate(v.voucher_date)}</td>
-                <td>{v.party}</td>
+                <td className="font-medium">{v.party}</td>
                 <td>{v.bank}</td>
                 <td>
-                  {v.mode}
-                  <div className="muted" style={{ fontSize: 11 }}>
-                    {v.reference}
-                  </div>
+                  <span className="font-semibold">{v.mode}</span>
+                  {v.reference && (
+                    <span className="muted mono ml-1.5 text-[11px]">
+                      · {v.reference}
+                    </span>
+                  )}
                 </td>
                 <td>
-                  <span className={`badge ${v.status === 'CANCELLED' ? 's-CANCELLED' : 's-PAID'}`}>
-                    {v.status}
-                  </span>
+                  <StatusBadge s={v.status === 'POSTED' ? 'PAID' : v.status} />
                 </td>
                 <td className="num">{v.tds_amount ? inr2(v.tds_amount) : '—'}</td>
                 <td className="num">
@@ -195,7 +195,7 @@ export default function Vouchers() {
             ))}
             {data && !data.length && (
               <tr>
-                <td colSpan={10} className="muted" style={{ textAlign: 'center', padding: '24px' }}>
+                <td colSpan={10} className="muted text-center p-6">
                   No vouchers recorded
                 </td>
               </tr>
@@ -293,7 +293,7 @@ export default function Vouchers() {
           </div>
 
           {open && (
-            <div style={{ marginTop: 20 }}>
+            <div className="mt-5">
               <h3>Settle against {rec ? 'invoices' : 'bills'}</h3>
               <table>
                 <thead>
@@ -302,7 +302,7 @@ export default function Vouchers() {
                     <th>Date</th>
                     <th>Due</th>
                     <th className="num">Outstanding</th>
-                    <th style={{ width: 160 }}>Allocate (₹)</th>
+                    <th className="w-40">Allocate (₹)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -327,7 +327,7 @@ export default function Vouchers() {
                   ))}
                   {!open.length && (
                     <tr>
-                      <td colSpan={5} className="muted" style={{ textAlign: 'center', padding: '16px' }}>
+                      <td colSpan={5} className="muted text-center p-4">
                         No open documents — full amount will be held as on-account advance
                       </td>
                     </tr>
@@ -335,7 +335,7 @@ export default function Vouchers() {
                 </tbody>
               </table>
 
-              <p className="muted" style={{ marginTop: 10 }}>
+              <p className="muted mt-2.5">
                 Total voucher value {inr2(gross)} (Amount + TDS) · Allocated {inr2(allocated)} ·{' '}
                 {gross - allocated >= 0 ? (
                   `On account advance: ${inr2(gross - allocated)}`
@@ -346,7 +346,7 @@ export default function Vouchers() {
             </div>
           )}
 
-          <div className="row" style={{ justifyContent: 'flex-end', marginTop: 20 }}>
+          <div className="row justify-end mt-5">
             <Btn
               className="btn green"
               onClick={save}

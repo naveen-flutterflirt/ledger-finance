@@ -77,10 +77,10 @@ export default function MasterPage({
     <>
       <div className="topbar">
         <h1>{title}</h1>
-        <div className="row">
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
           {extra}
           {canEdit && (
-            <button className="btn primary" onClick={() => setEd({ ...defaults })}>
+            <button className="btn primary whitespace-nowrap" onClick={() => setEd({ ...defaults })}>
               + New
             </button>
           )}
@@ -89,7 +89,7 @@ export default function MasterPage({
 
       <Msg err={error} />
 
-      <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="card p-0 overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -185,7 +185,7 @@ export default function MasterPage({
                   ) : f.type === 'checkbox' ? (
                     <input
                       type="checkbox"
-                      style={{ width: 'auto' }}
+                      className="w-auto"
                       checked={!!ed[f.name]}
                       onChange={e => setEd({ ...ed, [f.name]: e.target.checked })}
                     />
@@ -201,7 +201,7 @@ export default function MasterPage({
                 </Field>
               ))}
             </div>
-            <div className="row" style={{ justifyContent: 'flex-end', marginTop: 20 }}>
+            <div className="row justify-end mt-5">
               <button type="button" className="btn" onClick={() => setEd(null)} disabled={saving}>
                 Cancel
               </button>

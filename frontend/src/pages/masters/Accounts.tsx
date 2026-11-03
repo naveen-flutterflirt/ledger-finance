@@ -58,7 +58,7 @@ export default function Accounts() {
             <>
               <Link to={`/reports/ledger?account_id=${r.id}`}>{r.name}</Link>
               {r.system_key && (
-                <span className="badge" style={{ marginLeft: 6 }}>
+                <span className="badge ml-1.5">
                   system
                 </span>
               )}

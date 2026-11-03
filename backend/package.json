@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "db:init": "tsx scripts/init-db.ts",
-    "demo": "tsx scripts/demo.ts"
+    "db:optimize": "tsx scripts/optimize-db.ts",
+    "demo": "node scripts/demo.mjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

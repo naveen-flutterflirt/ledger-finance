@@ -101,14 +101,14 @@ export default function NewJournal() {
         </Field>
       </div>
 
-      <div className="card" style={{ padding: 0 }}>
+      <div className="card p-0 overflow-x-auto">
         <table>
           <thead>
             <tr>
-              <th style={{ width: '38%' }}>Account</th>
+              <th className="w-[38%] min-w-[200px]">Account</th>
               <th>Sub-ledger party (Debtor / Creditor)</th>
-              <th style={{ width: 160 }}>Debit (₹)</th>
-              <th style={{ width: 160 }}>Credit (₹)</th>
+              <th className="w-40">Debit (₹)</th>
+              <th className="w-40">Credit (₹)</th>
               <th />
             </tr>
           </thead>

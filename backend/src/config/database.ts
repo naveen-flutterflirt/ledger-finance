@@ -8,9 +8,11 @@ types.setTypeParser(20, v => parseInt(v, 10)); // BIGINT -> number
 
 export const pool = new Pool({
   connectionString: ENV.DATABASE_URL,
-  max: 15,
+  max: 20, // increased to safely handle parallel reporting and dashboard queries
   connectionTimeoutMillis: 15000, // 15s connection timeout for Neon cloud wakeups
   idleTimeoutMillis: 30000,
+  statement_timeout: 15000, // 15s max query execution time to prevent hanging connection pool
+  query_timeout: 15000,
   keepAlive: true,
   ssl: ENV.DATABASE_URL.includes('sslmode=require') ? { rejectUnauthorized: false } : undefined,
 });

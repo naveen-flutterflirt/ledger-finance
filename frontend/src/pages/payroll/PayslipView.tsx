@@ -47,7 +47,7 @@ export default function PayslipView() {
           </div>
           <div className="spacer" />
           <div className="right">
-            <h2 style={{ color: 'var(--pink)' }}>PAYSLIP</h2>
+            <h2 className="text-pink">PAYSLIP</h2>
             <b>
               {new Date(s.period + 'T00:00:00').toLocaleDateString('en-IN', {
                 month: 'long',
@@ -57,7 +57,7 @@ export default function PayslipView() {
           </div>
         </div>
 
-        <hr style={{ border: 0, borderTop: '1px solid var(--line)', margin: '16px 0' }} />
+        <hr className="border-0 border-t border-surface-line my-4" />
 
         <table className="meta">
           <tbody>
@@ -90,7 +90,7 @@ export default function PayslipView() {
           </tbody>
         </table>
 
-        <div className="grid g2" style={{ marginTop: 20 }}>
+        <div className="grid g2 mt-5">
           <table>
             <thead>
               <tr>
@@ -138,18 +138,15 @@ export default function PayslipView() {
           </table>
         </div>
 
-        <div
-          className="card"
-          style={{ background: '#0B1F4B', color: '#fff', marginTop: 18, padding: 18 }}
-        >
+        <div className="card bg-navy text-white mt-4.5 p-4.5">
           <div className="row">
-            <b style={{ fontSize: 16 }}>Take-home Net Pay</b>
+            <b className="text-base">Take-home Net Pay</b>
             <div className="spacer" />
-            <b style={{ fontSize: 24, color: '#7ff0d9' }}>{inr2(s.net_pay)}</b>
+            <b className="text-2xl text-teal">{inr2(s.net_pay)}</b>
           </div>
         </div>
 
-        <p className="muted" style={{ marginTop: 14 }}>
+        <p className="muted mt-3.5">
           Employer contributions (not deducted from employee): PF {inr2(s.pf_employer)} · ESI{' '}
           {inr2(s.esi_employer)}. Applicable PF wage: {inr2(s.pf_wage)}.
           This is an electronically generated statement.

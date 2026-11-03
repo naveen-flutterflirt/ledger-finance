@@ -75,7 +75,7 @@ export default function JournalView() {
         <div className="card">
           <div className="muted">Created by</div>
           <b>{e.created_by_name ?? 'System'}</b>
-          <div className="muted" style={{ fontSize: 11 }}>
+          <div className="muted text-[11px]">
             {new Date(e.created_at).toLocaleString('en-IN')}
           </div>
         </div>
@@ -91,8 +91,8 @@ export default function JournalView() {
         </div>
       </div>
 
-      <div className="card">
-        <p>
+      <div className="card p-0 overflow-x-auto">
+        <p className="p-4 m-0 border-b border-surface-line">
           <b>Narration:</b> {e.narration}
         </p>
         <table>

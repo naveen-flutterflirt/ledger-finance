@@ -116,11 +116,10 @@ export default function Banking() {
     <>
       <div className="topbar">
         <h1>Bank reconciliation</h1>
-        <div className="row">
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
           <select
             value={bank ?? ''}
             onChange={e => setBank(Number(e.target.value))}
-            style={{ width: 240 }}
           >
             {banks.map((b: any) => (
               <option key={b.id} value={b.id}>
@@ -133,15 +132,14 @@ export default function Banking() {
             type="date"
             value={asOf}
             onChange={e => setAsOf(e.target.value)}
-            style={{ width: 160 }}
           />
 
-          <label className="btn" style={{ margin: 0 }}>
+          <label className="btn m-0 cursor-pointer whitespace-nowrap">
             ⬆ Import CSV statement
             <input
               type="file"
               accept=".csv,text/csv"
-              style={{ display: 'none' }}
+              className="hidden"
               onChange={async e => {
                 const f = e.target.files?.[0];
                 if (!f) return;
@@ -263,7 +261,7 @@ export default function Banking() {
                   ))}
                   {!r.unmatched_book.length && (
                     <tr>
-                      <td colSpan={5} className="muted" style={{ textAlign: 'center', padding: '16px' }}>
+                      <td colSpan={5} className="muted text-center p-4">
                         Every ledger item is accounted for on the statement
                       </td>
                     </tr>
@@ -273,9 +271,9 @@ export default function Banking() {
             </div>
           </div>
 
-          <div className="card" style={{ padding: 0 }}>
-            <div className="row" style={{ padding: 14 }}>
-              <h3 style={{ margin: 0 }}>
+          <div className="card p-0 overflow-x-auto">
+            <div className="row p-3.5">
+              <h3 className="m-0">
                 Bank statement · {r.matched} matched, {r.unmatched} to review
               </h3>
               <div className="spacer" />
@@ -326,7 +324,7 @@ export default function Banking() {
                           <span className="badge s-SUBMITTED">unmatched</span>
                         )}
                       </td>
-                      <td className="right" style={{ whiteSpace: 'nowrap' }}>
+                      <td className="right whitespace-nowrap">
                         {s.matched_line_id ? (
                           <Btn
                             className="btn sm"
@@ -422,7 +420,7 @@ export default function Banking() {
               ))}
               {!cands.length && (
                 <tr>
-                  <td colSpan={4} className="muted" style={{ textAlign: 'center', padding: '16px' }}>
+                  <td colSpan={4} className="muted text-center p-4">
                     No candidates found within ±5 days. Use “Book it” to record it.
                   </td>
                 </tr>
@@ -456,7 +454,7 @@ export default function Banking() {
               />
             </Field>
           </div>
-          <div className="row" style={{ justifyContent: 'flex-end', marginTop: 20 }}>
+          <div className="row justify-end mt-5">
             <Btn
               className="btn green"
               disabled={!book.account_id}

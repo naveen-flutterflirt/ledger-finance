@@ -51,16 +51,15 @@ export default function Payroll() {
     <>
       <div className="topbar">
         <h1>Payroll runs</h1>
-        <div className="row">
+        <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
           <input
             type="month"
             value={period}
             onChange={e => setPeriod(e.target.value)}
-            style={{ width: 160 }}
             title="Select payroll month"
           />
           <Btn
-            className="btn primary"
+            className="btn primary whitespace-nowrap"
             onClick={createPayroll}
             loading={submitting}
             loadingText="Processing..."
@@ -76,7 +75,7 @@ export default function Payroll() {
 
       <Msg err={err} />
 
-      <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="card p-0 overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -127,15 +126,14 @@ export default function Payroll() {
                     <b>{inr2(r.net)}</b>
                   </td>
                   <td className="num">{inr2(r.employer_cost)}</td>
-                  <td className="right" style={{ whiteSpace: 'nowrap' }}>
+                  <td className="right whitespace-nowrap">
                     <Link className="btn sm primary" to={`/payroll/${r.id}`}>
                       View Run #{r.id}
                     </Link>
                     {r.journal_entry_id && (
                       <Link
-                        className="btn sm"
+                        className="btn sm ml-1.5"
                         to={`/journals/${r.journal_entry_id}`}
-                        style={{ marginLeft: 6 }}
                         title="View Ledger Journal Entry"
                       >
                         Journal #{r.journal_entry_id}
@@ -164,7 +162,7 @@ export default function Payroll() {
         </table>
       </div>
 
-      <p className="muted" style={{ marginTop: 14 }}>
+      <p className="muted mt-3.5">
         Statutory parameters (PF 12% + 12% on wages up to ceiling, ESI 0.75% + 3.25% up to ₹21,000 gross,
         Labour-Code 50% wage rule, and state professional tax slabs) are editable under Company Settings.
       </p>

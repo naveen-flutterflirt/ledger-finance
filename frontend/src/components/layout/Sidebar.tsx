@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import SessionBox from './SessionBox.js';
 import { useAuth } from '../../context/AuthContext.js';
@@ -28,6 +28,7 @@ import {
   Wallet,
   Settings,
   LucideIcon,
+  X,
 } from 'lucide-react';
 
 interface SidebarLinkProps {
@@ -37,9 +38,20 @@ interface SidebarLinkProps {
   end?: boolean;
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
   const { role, canAccess } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    if (mobileOpen && onClose) {
+      onClose();
+    }
+  }, [location.pathname, location.search]);
 
   const isLinkActive = (to: string, end?: boolean) => {
     const [targetPath, targetQuery] = to.split('?');
@@ -72,17 +84,39 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="side">
-      {/* Brand Header */}
-      <div className="brand-wrapper">
-        <div className="brand-logo-icon">
-          <Layers size={18} strokeWidth={2.4} />
+    <>
+      {mobileOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+      <aside className={`side ${mobileOpen ? 'mobile-open' : ''}`}>
+        {/* Brand Header */}
+        <div className="brand-wrapper">
+          <img
+            src="/logo.png"
+            alt="Bluepeak"
+            width={32}
+            height={32}
+            className="app-brand-logo"
+          />
+          <div className="brand-text">
+            Blue<span>peak</span>
+          </div>
+          <span className="brand-badge">PRO</span>
+          {onClose && (
+            <button
+              type="button"
+              className="side-close-btn"
+              onClick={onClose}
+              aria-label="Close sidebar"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
-        <div className="brand-text">
-          Ledger<span>Pilot</span>
-        </div>
-        <span className="brand-badge">PRO</span>
-      </div>
 
       {/* Active Session & Company */}
       <SessionBox />
@@ -169,5 +203,6 @@ export default function Sidebar() {
         </div>
       </nav>
     </aside>
-  );
+  </>
+);
 }

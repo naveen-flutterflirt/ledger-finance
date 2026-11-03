@@ -31,12 +31,12 @@ export default function Employees() {
           key: 'name',
           label: 'Name',
           render: r => (
-            <>
-              <b>{r.name}</b>
-              <div className="muted" style={{ fontSize: 11 }}>
-                {r.designation} · {r.department}
-              </div>
-            </>
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+              <b className="font-semibold">{r.name}</b>
+              <span className="muted text-xs">
+                · {r.designation} ({r.department})
+              </span>
+            </span>
           ),
         },
         {
@@ -75,7 +75,7 @@ export default function Employees() {
                 {m.email}
               </span>
             ) : (
-              <span className="muted" style={{ fontSize: 11 }}>
+              <span className="muted text-[11px] whitespace-nowrap">
                 No login linked
               </span>
             );

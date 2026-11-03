@@ -25,8 +25,8 @@ export default function Ageing() {
     <>
       <div className="topbar">
         <h1>{side === 'AR' ? 'Receivables ageing' : 'Payables ageing'}</h1>
-        <div className="row">
-          <div className="tabs">
+        <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
+          <div className="tabs shrink-0">
             <button
               className={side === 'AR' ? 'on' : ''}
               onClick={() => setSide('AR')}
@@ -44,7 +44,6 @@ export default function Ageing() {
             type="date"
             value={asOf}
             onChange={e => setAsOf(e.target.value)}
-            style={{ width: 160 }}
           />
         </div>
       </div>
@@ -53,18 +52,24 @@ export default function Ageing() {
 
       {d && (
         <>
-          <div className="grid g4">
-            {B.map(([k, l]) => (
-              <div key={k} className="card kpi">
-                <div className="label">{l}</div>
-                <div className={`val ${k === 'd90p' && d.totals[k] > 0 ? 'out' : ''}`}>
-                  {inr2(d.totals[k])}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 mb-5">
+            {B.map(([k, l], i) => {
+              const variants = ['blue', 'emerald', 'amber', 'purple', 'pink'];
+              const v = variants[i] || 'default';
+              return (
+                <div key={k} className={`card kpi kpi-${v}`}>
+                  <div className="kpi-header">
+                    <div className="kpi-label">{l}</div>
+                  </div>
+                  <div className={`val ${k === 'd90p' && d.totals[k] > 0 ? '!text-rose-600' : ''}`}>
+                    {inr2(d.totals[k])}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+          <div className="card p-0 overflow-x-auto">
             <table>
               <thead>
                 <tr>
@@ -100,7 +105,7 @@ export default function Ageing() {
                 ))}
                 {!d.rows.length && (
                   <tr>
-                    <td colSpan={7} className="muted" style={{ textAlign: 'center', padding: '24px' }}>
+                    <td colSpan={7} className="muted text-center p-6">
                       No outstanding items found
                     </td>
                   </tr>

@@ -134,20 +134,20 @@ export default function DocView() {
       </div>
 
       <div className="invoice">
-        <div className="row" style={{ alignItems: 'flex-start' }}>
+        <div className="row items-start">
           <div>
             <h2>{d.company?.legal_name ?? d.company?.name}</h2>
-            <div className="muted" style={{ maxWidth: 420 }}>
+            <div className="muted max-w-md">
               {d.company?.address}
             </div>
-            <div style={{ marginTop: 4 }}>
+            <div className="mt-1">
               GSTIN <b className="mono">{d.company?.gstin ?? '—'}</b> · PAN {d.company?.pan ?? '—'}
             </div>
           </div>
           <div className="spacer" />
           <div className="right">
-            <h2 style={{ color: 'var(--pink)' }}>{title}</h2>
-            <table className="meta" style={{ width: 'auto', marginLeft: 'auto' }}>
+            <h2 className="text-pink">{title}</h2>
+            <table className="meta w-auto ml-auto">
               <tbody>
                 <tr>
                   <td className="muted">No.</td>
@@ -186,11 +186,11 @@ export default function DocView() {
           </div>
         </div>
 
-        <hr style={{ border: 0, borderTop: '1px solid var(--line)', margin: '18px 0' }} />
+        <hr className="border-0 border-t border-surface-line my-4.5" />
 
         <div>
           <div className="muted">{meta?.sales ? 'Bill to' : 'Supplier'}</div>
-          <b style={{ fontSize: 16 }}>{d.party_name}</b>
+          <b className="text-base font-bold">{d.party_name}</b>
           <div className="muted">{d.party_address}</div>
           <div>
             GSTIN <span className="mono">{d.party_gstin ?? 'Unregistered'}</span> · State{' '}
@@ -198,7 +198,7 @@ export default function DocView() {
           </div>
         </div>
 
-        <table style={{ marginTop: 18 }}>
+        <table className="mt-4.5">
           <thead>
             <tr>
               <th>#</th>
@@ -225,7 +225,7 @@ export default function DocView() {
                 <td>{i + 1}</td>
                 <td>
                   {l.description}
-                  <div className="muted" style={{ fontSize: 11 }}>
+                  <div className="muted text-[11px]">
                     {l.account_code} {l.account_name}
                   </div>
                 </td>
@@ -255,19 +255,19 @@ export default function DocView() {
           </tbody>
         </table>
 
-        <div className="row" style={{ alignItems: 'flex-start', marginTop: 16 }}>
-          <div style={{ maxWidth: 440 }}>
+        <div className="row items-start mt-4">
+          <div className="max-w-md">
             <div className="muted">Amount in words:</div>
             <b>Rupees {words(d.total)} Only</b>
-            {d.notes && <p className="muted" style={{ marginTop: 8 }}>{d.notes}</p>}
+            {d.notes && <p className="muted mt-2">{d.notes}</p>}
             {d.entry_no && (
-              <p className="muted no-print" style={{ marginTop: 4 }}>
+              <p className="muted no-print mt-1">
                 Ledger entry: <Link to={`/journals`}>{d.entry_no}</Link>
               </p>
             )}
           </div>
           <div className="spacer" />
-          <table style={{ width: 320 }}>
+          <table className="w-80">
             <tbody>
               <tr>
                 <td>Taxable value</td>
@@ -319,19 +319,19 @@ export default function DocView() {
         </div>
 
         {d.settlements?.length > 0 && (
-          <div className="no-print" style={{ marginTop: 18 }}>
-            <div className="muted" style={{ fontWeight: 600, marginBottom: 4 }}>
+          <div className="no-print mt-4.5">
+            <div className="muted font-semibold mb-1">
               Settlement history:
             </div>
             {d.settlements.map((s: any, idx: number) => (
-              <div key={idx} style={{ fontSize: 13 }}>
+              <div key={idx} className="text-[13px]">
                 {fmtDate(s.date)} · {s.via} {s.ref} · {inr2(s.amount)}
               </div>
             ))}
           </div>
         )}
 
-        <p className="right" style={{ marginTop: 48 }}>
+        <p className="right mt-12">
           For {d.company?.name}
           <br />
           <br />
@@ -354,7 +354,7 @@ export default function DocView() {
               placeholder="e.g. Invoiced to incorrect company"
             />
           </Field>
-          <div className="row" style={{ justifyContent: 'flex-end', marginTop: 16 }}>
+          <div className="row justify-end mt-4">
             <button className="btn" onClick={() => setCancel(null)}>
               Keep document
             </button>

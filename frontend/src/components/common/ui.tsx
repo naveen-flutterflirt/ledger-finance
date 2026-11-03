@@ -24,15 +24,9 @@ export function Btn({
     <button
       {...props}
       type={type}
-      className={className}
+      className={`inline-flex items-center justify-center gap-1.5 ${className}`}
       disabled={disabled || loading}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-        ...props.style,
-      }}
+      style={props.style}
     >
       {loading ? (
         <>
@@ -65,14 +59,13 @@ export function Modal({
   return (
     <div className="modal-bg" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="row" style={{ borderBottom: '1px solid var(--line)', paddingBottom: 14, marginBottom: 16 }}>
-          <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--navy)' }}>{title}</h3>
+        <div className="row border-b border-surface-line pb-3.5 mb-4">
+          <h3 className="m-0 text-[17px] font-bold text-navy">{title}</h3>
           <div className="spacer" />
           <button
-            className="btn sm"
+            className="btn sm p-1.5 flex items-center"
             onClick={onClose}
             aria-label="Close dialog"
-            style={{ padding: '4px 6px', display: 'flex', alignItems: 'center' }}
           >
             <X size={15} />
           </button>
@@ -93,7 +86,7 @@ export function Field({
   wide?: boolean;
 }) {
   return (
-    <div style={wide ? { gridColumn: '1/-1' } : undefined}>
+    <div className={wide ? 'col-span-full' : ''}>
       <label>{label}</label>
       {children}
     </div>
@@ -104,13 +97,13 @@ export const Msg: React.FC<{ err?: string; ok?: string }> = ({ err, ok }) => (
   <>
     {err && (
       <div className="err" role="alert">
-        <AlertCircle size={16} style={{ flexShrink: 0 }} />
+        <AlertCircle size={16} className="shrink-0" />
         <span>{err}</span>
       </div>
     )}
     {ok && (
       <div className="ok" role="status">
-        <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+        <CheckCircle2 size={16} className="shrink-0" />
         <span>{ok}</span>
       </div>
     )}
@@ -159,24 +152,9 @@ export const StatusBadge: React.FC<{ s: string }> = ({ s }) => {
   const norm = s === 'POSTED' ? 'OPEN' : s;
   return (
     <span
-      className={`badge s-${norm}`}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 5,
-        padding: '3px 9px',
-        fontWeight: 600,
-      }}
+      className={`badge s-${norm} inline-flex items-center gap-1.5 py-1 px-2.5 font-semibold`}
     >
-      <span
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: '50%',
-          background: 'currentColor',
-          opacity: 0.8,
-        }}
-      />
+      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
       <span>{s.replace(/_/g, ' ')}</span>
     </span>
   );

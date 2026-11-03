@@ -5,7 +5,8 @@ import { apiCall, useData } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.js';
 import { fmtDate, inr2, todayStr } from '../../utils/format.js';
 import { DocViewSkeleton } from '../../components/common/Skeleton.js';
-import { BookText, CheckCircle2, ArrowRight } from 'lucide-react';
+import { BookText, CheckCircle2, ArrowRight, Banknote, ShieldAlert, CheckCircle, Briefcase } from 'lucide-react';
+import { KpiCard } from '../../components/common/KpiCard.js';
 
 export default function PayrollRun() {
   const { id } = useParams<{ id: string }>();
@@ -95,7 +96,7 @@ export default function PayrollRun() {
               <select
                 value={bank}
                 onChange={e => setBank(e.target.value)}
-                style={{ width: 220 }}
+                className="w-56"
               >
                 <option value="">Pay from bank…</option>
                 {lk.accounts
@@ -111,7 +112,7 @@ export default function PayrollRun() {
                 type="date"
                 value={payDate}
                 onChange={e => setPayDate(e.target.value)}
-                style={{ width: 150 }}
+                className="w-36"
               />
 
               <Btn
@@ -142,33 +143,19 @@ export default function PayrollRun() {
 
       {/* Ledger Journal Links */}
       {r.journal_entry_id && (
-        <div
-          className="card"
-          style={{
-            padding: '12px 18px',
-            marginBottom: 16,
-            background: '#f8fafd',
-            borderLeft: '4px solid var(--indigo)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 10,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <BookText size={18} style={{ color: 'var(--indigo)' }} />
+        <div className="card py-3 px-4.5 mb-4 bg-slate-50 border-l-4 border-l-indigo flex items-center justify-between flex-wrap gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <BookText size={18} className="text-indigo shrink-0" />
             <div>
-              <strong style={{ color: 'var(--navy)' }}>Posted to General Ledger:</strong>{' '}
+              <strong className="text-navy font-bold">Posted to General Ledger:</strong>{' '}
               <span className="muted">
                 Double-entry salary &amp; statutory accrual journal entry is recorded.
               </span>
             </div>
           </div>
           <Link
-            className="btn primary sm"
+            className="btn primary sm inline-flex items-center gap-1.5"
             to={`/journals/${r.journal_entry_id}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
             <span>View Ledger Journal #{r.journal_entry_id}</span>
             <ArrowRight size={13} />
@@ -177,33 +164,19 @@ export default function PayrollRun() {
       )}
 
       {r.payment_entry_id && (
-        <div
-          className="card"
-          style={{
-            padding: '12px 18px',
-            marginBottom: 16,
-            background: '#f0fdf4',
-            borderLeft: '4px solid var(--teal)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 10,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <CheckCircle2 size={18} style={{ color: '#0b7d6b' }} />
+        <div className="card py-3 px-4.5 mb-4 bg-emerald-50/60 border-l-4 border-l-teal flex items-center justify-between flex-wrap gap-2.5">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 size={18} className="text-teal shrink-0" />
             <div>
-              <strong style={{ color: '#065f46' }}>Bank Payment Recorded:</strong>{' '}
+              <strong className="text-emerald-800 font-bold">Bank Payment Recorded:</strong>{' '}
               <span className="muted">
                 Salary disbursement journal recorded against bank account.
               </span>
             </div>
           </div>
           <Link
-            className="btn sm"
+            className="btn sm inline-flex items-center gap-1.5"
             to={`/journals/${r.payment_entry_id}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
           >
             <span>View Disbursement Journal #{r.payment_entry_id}</span>
             <ArrowRight size={13} />
@@ -212,25 +185,41 @@ export default function PayrollRun() {
       )}
 
       <div className="grid g4">
-        <div className="card kpi">
-          <div className="label">Gross salary</div>
-          <div className="val">{inr2(r.gross)}</div>
-        </div>
-        <div className="card kpi">
-          <div className="label">Total deductions (PF, ESI, PT, TDS)</div>
-          <div className="val">{inr2(r.deductions)}</div>
-        </div>
-        <div className="card kpi">
-          <div className="label">Net payable</div>
-          <div className="val in">{inr2(r.net)}</div>
-        </div>
-        <div className="card kpi">
-          <div className="label">Employer cost (Gross + PF/ESI)</div>
-          <div className="val">{inr2(r.employer_cost)}</div>
-        </div>
+        <KpiCard
+          label="Gross salary"
+          value={inr2(r.gross)}
+          icon={Banknote}
+          variant="indigo"
+          tooltipTitle="Gross Salaries"
+          tooltipDesc="Total earnings before statutory employee deductions like PF, ESI, PT, and TDS."
+        />
+        <KpiCard
+          label="Total deductions"
+          value={inr2(r.deductions)}
+          icon={ShieldAlert}
+          variant="amber"
+          tooltipTitle="Statutory Deductions"
+          tooltipDesc="Total employee deductions withheld for PF, ESI, Professional Tax, and TDS."
+        />
+        <KpiCard
+          label="Net payable"
+          value={<span className="in">{inr2(r.net)}</span>}
+          icon={CheckCircle}
+          variant="teal"
+          tooltipTitle="Net Take-Home Payable"
+          tooltipDesc="Net salaries to be disbursed directly into employees' bank accounts."
+        />
+        <KpiCard
+          label="Employer cost"
+          value={inr2(r.employer_cost)}
+          icon={Briefcase}
+          variant="purple"
+          tooltipTitle="Total Cost to Company (CTC)"
+          tooltipDesc="Total company cost including gross salary plus employer PF and ESI contributions."
+        />
       </div>
 
-      <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="card p-0 overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -273,7 +262,7 @@ export default function PayrollRun() {
                   </td>
                   {draft && (
                     <>
-                      <td style={{ width: 80 }}>
+                      <td className="w-20">
                         <input
                           type="number"
                           step="0.5"
@@ -286,7 +275,7 @@ export default function PayrollRun() {
                           }
                         />
                       </td>
-                      <td style={{ width: 100 }}>
+                      <td className="w-24">
                         <input
                           type="number"
                           value={e.bonus}
@@ -298,7 +287,7 @@ export default function PayrollRun() {
                           }
                         />
                       </td>
-                      <td style={{ width: 100 }}>
+                      <td className="w-24">
                         <input
                           type="number"
                           value={e.other_deduction}
@@ -324,7 +313,7 @@ export default function PayrollRun() {
                   <td className="num muted">
                     {inr2(Number(s.pf_employer) + Number(s.esi_employer))}
                   </td>
-                  <td style={{ whiteSpace: 'nowrap' }}>
+                  <td className="whitespace-nowrap">
                     {draft && ed[s.employee_id] && (
                       <Btn
                         className="btn sm primary"

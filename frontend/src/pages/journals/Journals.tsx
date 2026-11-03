@@ -88,7 +88,7 @@ export default function Journals() {
         </div>
       </div>
 
-      <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="card p-0 overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -114,7 +114,7 @@ export default function Journals() {
               ))
             ) : (
               data?.map(e => (
-                <tr key={e.id} style={{ opacity: e.reversed_by ? 0.55 : 1 }}>
+                <tr key={e.id} className={e.reversed_by ? 'opacity-55' : ''}>
                   <td>
                     <Link to={`/journals/${e.id}`}>
                       <b className="mono">{e.entry_no}</b>
@@ -124,7 +124,7 @@ export default function Journals() {
                   <td>
                     <span className="badge">{e.source.replace(/_/g, ' ')}</span>
                     {e.reversed_by && (
-                      <span className="badge s-CANCELLED" style={{ marginLeft: 6 }}>
+                      <span className="badge s-CANCELLED ml-1.5">
                         reversed
                       </span>
                     )}
@@ -137,7 +137,7 @@ export default function Journals() {
             )}
             {data && !data.length && (
               <tr>
-                <td colSpan={6} className="muted" style={{ textAlign: 'center', padding: '24px' }}>
+                <td colSpan={6} className="muted text-center p-6">
                   No journal vouchers matching filters
                 </td>
               </tr>

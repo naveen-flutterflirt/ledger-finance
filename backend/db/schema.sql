@@ -59,6 +59,8 @@ CREATE TABLE memberships (
   permissions JSONB DEFAULT NULL,
   PRIMARY KEY (company_id, user_id)
 );
+CREATE INDEX idx_memberships_user ON memberships(user_id);
+CREATE INDEX idx_users_lower_email ON users(lower(email));
 
 CREATE TABLE fiscal_years (
   id         SERIAL PRIMARY KEY,
@@ -182,6 +184,9 @@ CREATE TABLE journal_lines (
 CREATE INDEX idx_jl_account ON journal_lines(account_id);
 CREATE INDEX idx_jl_party   ON journal_lines(party_id);
 CREATE INDEX idx_jl_entry   ON journal_lines(entry_id);
+CREATE INDEX idx_jl_company_account ON journal_lines(company_id, account_id);
+CREATE INDEX idx_jl_party_account ON journal_lines(party_id, account_id);
+CREATE INDEX idx_jl_account_amounts ON journal_lines(account_id, debit, credit);
 
 -- (1) every entry must balance — checked at COMMIT so lines can be inserted one by one
 CREATE OR REPLACE FUNCTION check_entry_balanced() RETURNS TRIGGER AS $$
@@ -266,6 +271,8 @@ CREATE TABLE invoices (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_inv_company ON invoices(company_id, kind, status, doc_date);
+CREATE INDEX idx_inv_company_party_status ON invoices(company_id, party_id, status);
+CREATE INDEX idx_inv_against ON invoices(against_id) WHERE against_id IS NOT NULL;
 CREATE UNIQUE INDEX uq_purchase_bill ON invoices(company_id, party_id, doc_no) WHERE kind = 'PURCHASE' AND status <> 'CANCELLED';
 
 CREATE TABLE invoice_lines (
@@ -284,6 +291,8 @@ CREATE TABLE invoice_lines (
   sgst        NUMERIC(16,2) NOT NULL DEFAULT 0,
   igst        NUMERIC(16,2) NOT NULL DEFAULT 0
 );
+CREATE INDEX idx_il_invoice ON invoice_lines(invoice_id);
+CREATE INDEX idx_il_item ON invoice_lines(item_id) WHERE item_id IS NOT NULL;
 
 -- ---------- Receipts & payments with allocation to invoices -----------
 CREATE TABLE vouchers (
@@ -305,6 +314,9 @@ CREATE TABLE vouchers (
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (company_id, voucher_no)
 );
+CREATE INDEX idx_vouchers_company_date ON vouchers(company_id, voucher_date DESC);
+CREATE INDEX idx_vouchers_company_party ON vouchers(company_id, party_id);
+
 CREATE TABLE allocations (
   id          SERIAL PRIMARY KEY,
   voucher_id  INT REFERENCES vouchers(id) ON DELETE CASCADE,
@@ -314,6 +326,8 @@ CREATE TABLE allocations (
   CHECK ((voucher_id IS NULL) <> (note_id IS NULL))
 );
 CREATE INDEX idx_alloc_invoice ON allocations(invoice_id);
+CREATE INDEX idx_alloc_voucher ON allocations(voucher_id);
+CREATE INDEX idx_alloc_note ON allocations(note_id);
 
 -- outstanding = total − settled; keeps status POSTED / PARTIAL / PAID and blocks over-allocation
 CREATE OR REPLACE FUNCTION recompute_invoice_status(inv_id INT) RETURNS VOID AS $$
@@ -358,6 +372,7 @@ CREATE TABLE bank_statement_lines (
   CHECK ((withdrawal > 0) <> (deposit > 0))
 );
 CREATE INDEX idx_bsl_account ON bank_statement_lines(bank_account_id, txn_date);
+CREATE INDEX idx_bsl_unmatched ON bank_statement_lines(company_id, bank_account_id) WHERE matched_line_id IS NULL;
 CREATE UNIQUE INDEX uq_bsl_dedupe ON bank_statement_lines(bank_account_id, txn_date, withdrawal, deposit, COALESCE(reference,''), description);
 
 -- ---------- Fixed assets & depreciation --------------------------------
@@ -385,6 +400,7 @@ CREATE TABLE fixed_assets (
   CHECK (salvage_value < cost),
   CHECK ((method = 'SLM' AND useful_life_years > 0) OR (method = 'WDV' AND wdv_rate > 0 AND wdv_rate < 100))
 );
+CREATE INDEX idx_fa_bill ON fixed_assets(bill_id) WHERE bill_id IS NOT NULL;
 CREATE TABLE depreciation_entries (
   id               SERIAL PRIMARY KEY,
   asset_id         INT NOT NULL REFERENCES fixed_assets(id),
@@ -421,6 +437,7 @@ CREATE TABLE employees (
   active         BOOLEAN NOT NULL DEFAULT TRUE,
   UNIQUE (company_id, emp_code)
 );
+CREATE INDEX idx_emp_user ON employees(user_id) WHERE user_id IS NOT NULL;
 
 CREATE TABLE payroll_runs (
   id               SERIAL PRIMARY KEY,
@@ -458,6 +475,7 @@ CREATE TABLE payslips (
   net_pay         NUMERIC(14,2) NOT NULL,
   UNIQUE (run_id, employee_id)
 );
+CREATE INDEX idx_payslips_employee ON payslips(employee_id);
 
 -- ---------- Audit -------------------------------------------------------
 CREATE TABLE audit_log (
@@ -472,14 +490,23 @@ SELECT l.id AS line_id, l.company_id, e.id AS entry_id, e.entry_no, e.entry_date
        l.account_id, a.code, a.name AS account_name, a.type, a.subtype, l.party_id, l.debit, l.credit, l.narration
 FROM journal_lines l JOIN journal_entries e ON e.id = l.entry_id JOIN accounts a ON a.id = l.account_id;
 
-CREATE VIEW v_invoice_outstanding AS
+CREATE OR REPLACE VIEW v_invoice_outstanding AS
+WITH alloc_summary AS (
+  SELECT a.invoice_id, SUM(a.amount) AS settled
+  FROM allocations a
+  LEFT JOIN vouchers v ON v.id = a.voucher_id
+  LEFT JOIN invoices n ON n.id = a.note_id
+  WHERE COALESCE(v.status, 'POSTED') = 'POSTED'
+    AND COALESCE(n.status::text, 'POSTED') <> 'CANCELLED'
+  GROUP BY a.invoice_id
+)
 SELECT i.*, p.name AS party_name, p.gstin AS party_gstin,
-       COALESCE((SELECT SUM(a.amount) FROM allocations a LEFT JOIN vouchers v ON v.id = a.voucher_id LEFT JOIN invoices n ON n.id = a.note_id
-                  WHERE a.invoice_id = i.id AND COALESCE(v.status,'POSTED') = 'POSTED' AND COALESCE(n.status::text,'POSTED') <> 'CANCELLED'),0) AS settled,
-       i.total - COALESCE((SELECT SUM(a.amount) FROM allocations a LEFT JOIN vouchers v ON v.id = a.voucher_id LEFT JOIN invoices n ON n.id = a.note_id
-                  WHERE a.invoice_id = i.id AND COALESCE(v.status,'POSTED') = 'POSTED' AND COALESCE(n.status::text,'POSTED') <> 'CANCELLED'),0) AS outstanding,
+       COALESCE(s.settled, 0) AS settled,
+       i.total - COALESCE(s.settled, 0) AS outstanding,
        GREATEST(CURRENT_DATE - i.due_date, 0) AS days_overdue
-FROM invoices i JOIN parties p ON p.id = i.party_id;
+FROM invoices i
+JOIN parties p ON p.id = i.party_id
+LEFT JOIN alloc_summary s ON s.invoice_id = i.id;
 
 -- ---------- Chart-of-accounts templates per industry ------------------
 INSERT INTO coa_templates(industry,code,name,type,subtype,system_key) VALUES

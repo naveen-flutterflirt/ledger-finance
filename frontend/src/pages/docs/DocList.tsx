@@ -5,6 +5,8 @@ import { StatusBadge } from '../../components/common/ui.js';
 import { fmtDate, inr2 } from '../../utils/format.js';
 import { useData } from '../../api/client.js';
 import { Skeleton } from '../../components/common/Skeleton.js';
+import { KpiCard } from '../../components/common/KpiCard.js';
+import { Receipt, Percent, TrendingUp, CreditCard } from 'lucide-react';
 
 export default function DocList() {
   const { kind = 'sales' } = useParams<{ kind: string }>();
@@ -26,11 +28,10 @@ export default function DocList() {
     <>
       <div className="topbar">
         <h1>{meta.title}</h1>
-        <div className="row">
+        <div className="flex items-center gap-3 shrink-0">
           <select
             value={st}
             onChange={e => setSt(e.target.value)}
-            style={{ width: 180 }}
           >
             <option value="">All statuses</option>
             <option value="OPEN">Unpaid / part-paid</option>
@@ -41,7 +42,7 @@ export default function DocList() {
             ))}
           </select>
 
-          <Link className="btn primary" to={`/docs/${kind}/new`}>
+          <Link className="btn primary whitespace-nowrap" to={`/docs/${kind}/new`}>
             + New {meta.one.toLowerCase()}
           </Link>
         </div>
@@ -50,27 +51,41 @@ export default function DocList() {
       {error && <div className="err">{error}</div>}
 
       <div className="grid g4">
-        <div className="card kpi">
-          <div className="label">Taxable value</div>
-          <div className="val">{inr2(sum('taxable_value'))}</div>
-        </div>
-        <div className="card kpi">
-          <div className="label">GST total</div>
-          <div className="val">
-            {inr2(sum('cgst') + sum('sgst') + sum('igst'))}
-          </div>
-        </div>
-        <div className="card kpi">
-          <div className="label">Total value</div>
-          <div className="val">{inr2(sum('total'))}</div>
-        </div>
-        <div className="card kpi">
-          <div className="label">Outstanding balance</div>
-          <div className="val">{inr2(sum('outstanding'))}</div>
-        </div>
+        <KpiCard
+          label="Taxable value"
+          value={inr2(sum('taxable_value'))}
+          icon={Receipt}
+          variant="blue"
+          tooltipTitle="Taxable Value"
+          tooltipDesc="Total net value of goods/services across all valid documents before GST."
+        />
+        <KpiCard
+          label="GST total"
+          value={inr2(sum('cgst') + sum('sgst') + sum('igst'))}
+          icon={Percent}
+          variant="purple"
+          tooltipTitle="GST Total"
+          tooltipDesc="Combined CGST, SGST, and IGST tax computed across all documents in this list."
+        />
+        <KpiCard
+          label="Total value"
+          value={inr2(sum('total'))}
+          icon={TrendingUp}
+          variant="indigo"
+          tooltipTitle="Grand Total"
+          tooltipDesc="Gross total value of documents including taxable amount and all GST taxes."
+        />
+        <KpiCard
+          label="Outstanding balance"
+          value={inr2(sum('outstanding'))}
+          icon={CreditCard}
+          variant="amber"
+          tooltipTitle="Outstanding Balance"
+          tooltipDesc="Total remaining unpaid balance pending settlement from customers/vendors."
+        />
       </div>
 
-      <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="card p-0 overflow-x-auto">
         <table>
           <thead>
             <tr>
@@ -106,25 +121,30 @@ export default function DocList() {
               data?.map(d => (
                 <tr key={d.id}>
                   <td>
-                    <Link to={`/docs/${kind}/${d.id}`}>
-                      <b>{d.doc_no ?? 'Draft #' + d.id}</b>
+                    <Link
+                      to={`/docs/${kind}/${d.id}`}
+                      className="whitespace-nowrap font-semibold inline-flex items-center gap-1.5"
+                    >
+                      <span>{d.doc_no ?? 'Draft #' + d.id}</span>
+                      {d.is_opening && (
+                        <span className="badge text-[10px] py-px px-1.5 font-semibold">
+                          opening
+                        </span>
+                      )}
                     </Link>
-                    {d.is_opening && (
-                      <div className="muted" style={{ fontSize: 11 }}>
-                        opening balance
-                      </div>
-                    )}
                   </td>
                   <td>{fmtDate(d.doc_date)}</td>
-                  <td>{d.party_name}</td>
-                  <td className="mono">{d.party_gstin ?? 'Unregistered'}</td>
+                  <td className="font-medium">{d.party_name}</td>
+                  <td className="mono text-xs">{d.party_gstin ?? 'Unregistered'}</td>
                   <td>
-                    {fmtDate(d.due_date)}
-                    {d.days_overdue > 0 && ['POSTED', 'PARTIAL'].includes(d.status) && (
-                      <div>
-                        <span className="badge s-OVERDUE">{d.days_overdue}d overdue</span>
-                      </div>
-                    )}
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                      <span>{fmtDate(d.due_date)}</span>
+                      {d.days_overdue > 0 && ['POSTED', 'PARTIAL'].includes(d.status) && (
+                        <span className="badge s-OVERDUE text-[10px] py-0.5 px-1.5">
+                          {d.days_overdue}d overdue
+                        </span>
+                      )}
+                    </span>
                   </td>
                   <td>
                     <StatusBadge s={d.status} />
@@ -142,7 +162,7 @@ export default function DocList() {
             )}
             {data && !data.length && (
               <tr>
-                <td colSpan={10} className="muted" style={{ textAlign: 'center', padding: '24px' }}>
+                <td colSpan={10} className="muted text-center p-6">
                   No documents found
                 </td>
               </tr>

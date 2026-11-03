@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { fmtDate, fyStart, inr2, todayStr } from '../../utils/format.js';
 import { TableSkeleton } from '../../components/common/Skeleton.js';
 import { useData } from '../../api/client.js';
+import { KpiCard } from '../../components/common/KpiCard.js';
+import { TrendingUp, ShoppingBag, PieChart, Award } from 'lucide-react';
 
 const Grp = ({
   title,
@@ -71,8 +73,8 @@ export default function Statements() {
     <>
       <div className="topbar no-print">
         <h1>Financial statements</h1>
-        <div className="row">
-          <div className="tabs">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+          <div className="tabs shrink-0">
             {[
               ['pl', 'Profit & loss'],
               ['bs', 'Balance sheet'],
@@ -94,7 +96,6 @@ export default function Statements() {
               type="date"
               value={from}
               onChange={e => setFrom(e.target.value)}
-              style={{ width: 150 }}
             />
           )}
 
@@ -102,10 +103,9 @@ export default function Statements() {
             type="date"
             value={to}
             onChange={e => setTo(e.target.value)}
-            style={{ width: 150 }}
           />
 
-          <button className="btn" onClick={() => window.print()}>
+          <button className="btn whitespace-nowrap" onClick={() => window.print()}>
             Print / PDF
           </button>
         </div>
@@ -114,34 +114,79 @@ export default function Statements() {
       {loading && <TableSkeleton rows={7} cols={3} />}
 
       {d && tab === 'pl' && (
-        <div className="card" style={{ maxWidth: 880 }}>
-          <h3>
-            Statement of profit &amp; loss · {fmtDate(d.from)} – {fmtDate(d.to)}
-          </h3>
-          <table>
-            <tbody>
-              <Grp title="Revenue from operations" g={d.revenue} />
-              <Grp title="Cost of sales &amp; direct expenses" g={d.cogs} />
-              <Tot label={`Gross profit (${d.gross_margin}%)`} v={d.gross_profit} />
-              <Grp title="Employee benefit expenses" g={d.employee} />
-              <Grp title="Other operating expenses" g={d.opex} />
-              <Tot label="EBITDA" v={d.ebitda} />
-              <Grp title="Depreciation &amp; amortisation" g={d.depreciation} />
-              <Grp title="Finance costs" g={d.finance} />
-              <Grp title="Other income" g={d.other_income} />
-              {d.round_off?.total !== 0 && <Grp title="Round off" g={d.round_off} />}
-              <Tot
-                label={`Net profit (${d.net_margin}% margin)`}
-                v={d.net_profit}
-                strong
-              />
-            </tbody>
-          </table>
-          <p className="muted" style={{ marginTop: 14 }}>
-            Before tax. Year-end closing entries are excluded so closed financial periods retain their
-            operational operating results.
-          </p>
-        </div>
+        <>
+          <div className="grid g4 mb-5">
+            <KpiCard
+              label="Revenue from operations"
+              value={inr2(d.revenue?.total ?? 0)}
+              icon={TrendingUp}
+              variant="emerald"
+              tooltipTitle="Total Revenue"
+              tooltipDesc="Total operating sales, SaaS revenue, and services income earned during this period."
+            />
+            <KpiCard
+              label="Cost of sales (COGS)"
+              value={inr2(d.cogs?.total ?? 0)}
+              icon={ShoppingBag}
+              variant="amber"
+              tooltipTitle="Cost of Goods & Direct Expenses"
+              tooltipDesc="Hosting, infrastructure, and direct expenses incurred to deliver services."
+            />
+            <KpiCard
+              label="Gross profit"
+              value={inr2(d.gross_profit ?? 0)}
+              sub={`${d.gross_margin}% margin`}
+              icon={PieChart}
+              variant="blue"
+              tooltipTitle="Gross Profit Margin"
+              tooltipDesc="Revenue minus cost of direct sales before overheads and operating costs."
+            />
+            <KpiCard
+              label="Net profit (Before Tax)"
+              value={inr2(d.net_profit ?? 0)}
+              sub={`${d.net_margin}% net margin`}
+              icon={Award}
+              variant={d.net_profit >= 0 ? 'emerald' : 'pink'}
+              valueClassName={d.net_profit >= 0 ? 'val-green' : 'text-rose-600'}
+              tooltipTitle="Net Operating Profit"
+              tooltipDesc="Final bottom-line operating earnings after subtracting all employee, admin, and financing costs."
+            />
+          </div>
+
+          <div className="card w-full overflow-x-auto shadow-sm border border-slate-200 p-0">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="m-0 text-base font-bold text-navy">
+                Statement of profit &amp; loss · {fmtDate(d.from)} – {fmtDate(d.to)}
+              </h3>
+              <span className="badge s-APPROVED text-xs px-2.5 py-1">
+                Net Margin: {d.net_margin}%
+              </span>
+            </div>
+            <table>
+              <tbody>
+                <Grp title="Revenue from operations" g={d.revenue} />
+                <Grp title="Cost of sales &amp; direct expenses" g={d.cogs} />
+                <Tot label={`Gross profit (${d.gross_margin}%)`} v={d.gross_profit} />
+                <Grp title="Employee benefit expenses" g={d.employee} />
+                <Grp title="Other operating expenses" g={d.opex} />
+                <Tot label="EBITDA" v={d.ebitda} />
+                <Grp title="Depreciation &amp; amortisation" g={d.depreciation} />
+                <Grp title="Finance costs" g={d.finance} />
+                <Grp title="Other income" g={d.other_income} />
+                {d.round_off?.total !== 0 && <Grp title="Round off" g={d.round_off} />}
+                <Tot
+                  label={`Net profit (${d.net_margin}% margin)`}
+                  v={d.net_profit}
+                  strong
+                />
+              </tbody>
+            </table>
+            <div className="p-4 bg-slate-50/70 border-t border-slate-100 text-xs text-slate-500">
+              Before tax. Year-end closing entries are excluded so closed financial periods retain their
+              operational operating results.
+            </div>
+          </div>
+        </>
       )}
 
       {d && tab === 'bs' && (
@@ -179,7 +224,7 @@ export default function Statements() {
                 <Tot label="Total equity &amp; liabilities" v={d.total_liabilities_equity} strong />
               </tbody>
             </table>
-            <p className={d.balanced ? 'check' : 'cross'} style={{ marginTop: 14 }}>
+            <p className={`${d.balanced ? 'check' : 'cross'} mt-3.5`}>
               {d.balanced
                 ? '✔ Balance sheet balances'
                 : `✖ Difference of ${inr2(d.difference)} detected`}
@@ -189,7 +234,7 @@ export default function Statements() {
       )}
 
       {d && tab === 'cf' && (
-        <div className="card" style={{ maxWidth: 880 }}>
+        <div className="card max-w-4xl">
           <h3>
             Cash flow statement (Indirect method) · {fmtDate(d.from)} – {fmtDate(d.to)}
           </h3>
@@ -220,7 +265,7 @@ export default function Statements() {
               <Tot label="Closing cash &amp; bank balance" v={d.closing_cash} strong />
             </tbody>
           </table>
-          <p className={d.reconciles ? 'check' : 'cross'} style={{ marginTop: 14 }}>
+          <p className={`${d.reconciles ? 'check' : 'cross'} mt-3.5`}>
             {d.reconciles
               ? '✔ Reconciles perfectly to the movement in cash & bank accounts'
               : '✖ Does not reconcile'}
@@ -229,7 +274,7 @@ export default function Statements() {
       )}
 
       {d && tab === 'tb' && (
-        <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+        <div className="card p-0 overflow-x-auto">
           <table>
             <thead>
               <tr>

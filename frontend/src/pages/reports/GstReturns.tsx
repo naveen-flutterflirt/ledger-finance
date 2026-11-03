@@ -67,8 +67,8 @@ export default function GstReturns() {
     <>
       <div className="topbar">
         <h1>GST returns · {d?.gstin ?? '—'}</h1>
-        <div className="row">
-          <div className="tabs">
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
+          <div className="tabs shrink-0">
             {[
               ['3b', 'GSTR-3B summary'],
               ['r1', 'GSTR-1 invoices'],
@@ -88,11 +88,10 @@ export default function GstReturns() {
             type="month"
             value={m}
             onChange={e => setM(e.target.value)}
-            style={{ width: 160 }}
           />
 
           {d && (
-            <button className="btn" onClick={downloadCsv}>
+            <button className="btn whitespace-nowrap" onClick={downloadCsv}>
               Export B2B CSV
             </button>
           )}
@@ -102,8 +101,8 @@ export default function GstReturns() {
       {loading && <TableSkeleton rows={6} cols={6} />}
 
       {d && tab === '3b' && (
-        <div className="grid g2">
-          <div className="card">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 min-w-0">
+          <div className="card min-w-0 overflow-x-auto">
             <h3>3.1 Outward supplies &amp; 4. Eligible ITC</h3>
             <table>
               <thead>
@@ -133,7 +132,7 @@ export default function GstReturns() {
             </table>
           </div>
 
-          <div className="card">
+          <div className="card min-w-0 overflow-x-auto">
             <h3>Payment of tax (after legal ITC set-off)</h3>
             <table>
               <tbody>
@@ -160,7 +159,7 @@ export default function GstReturns() {
                 )}
               </tbody>
             </table>
-            <p className="muted" style={{ marginTop: 14 }}>
+            <p className="muted mt-3.5">
               Set-off order applied: IGST credit → IGST, CGST, SGST; CGST credit → CGST, IGST; SGST
               credit → SGST, IGST. Verify on the GST portal before filing.
             </p>
@@ -170,8 +169,8 @@ export default function GstReturns() {
 
       {d && tab === 'r1' && (
         <>
-          <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
-            <div style={{ padding: 14 }}>
+          <div className="card p-0 overflow-x-auto">
+            <div className="p-3.5">
               <b>B2B — registered buyers ({d.gstr1.b2b.length})</b>
             </div>
             <table>
@@ -237,7 +236,7 @@ export default function GstReturns() {
                   ))}
                 </tbody>
               </table>
-              <p className="muted" style={{ marginTop: 10 }}>
+              <p className="muted mt-2.5">
                 B2C large (inter-state &gt; ₹1 lakh): {d.gstr1.b2cl.length} invoice(s)
               </p>
             </div>
@@ -261,7 +260,7 @@ export default function GstReturns() {
       )}
 
       {d && tab === 'hsn' && (
-        <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+        <div className="card p-0 overflow-x-auto">
           <table>
             <thead>
               <tr>

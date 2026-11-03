@@ -174,7 +174,7 @@ export default function Settings() {
           </Field>
         </div>
 
-        <h3 style={{ marginTop: 24 }}>Payroll statutory parameters</h3>
+        <h3 className="mt-6">Payroll statutory parameters</h3>
         <p className="muted">
           PF wage ceiling ₹25,000, ESI ceiling ₹21,000, Labour-Code 50% wage rule, and state PT slabs.
         </p>
@@ -188,8 +188,7 @@ export default function Settings() {
 
         {owner && (
           <Btn
-            className="btn primary"
-            style={{ marginTop: 14 }}
+            className="btn primary mt-3.5"
             loading={busyKey === 'save_company'}
             loadingText="Saving company settings..."
             onClick={() =>
@@ -263,30 +262,31 @@ export default function Settings() {
 
       <div className="card">
         <h3>Team members &amp; Module Access</h3>
-        <p className="muted" style={{ marginBottom: 14 }}>
+        <p className="muted mb-3.5">
           Control role-based access and grant granular module permissions (Sales, Purchases, Accounting, Payroll, Reports) to each member.
         </p>
-        <table>
-          <thead>
-            <tr>
-              <th style={{ width: 70 }}>User ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Accessible Modules</th>
-              <th className="right" style={{ minWidth: 160 }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {team?.map(u => {
-              const eff = u.effective_permissions || getRoleDefaults(u.role);
-              const activeModules = MODULE_DEFS.filter(m => eff[m.key]);
+        <div className="overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th className="w-[70px]">User ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Accessible Modules</th>
+                <th className="right min-w-[160px]">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {team?.map(u => {
+                const eff = u.effective_permissions || getRoleDefaults(u.role);
+                const activeModules = MODULE_DEFS.filter(m => eff[m.key]);
 
-              return (
-                <tr key={u.id}>
-                  <td className="mono" style={{ color: 'var(--indigo)', fontWeight: 600 }}>
-                    #{u.id}
-                  </td>
+                return (
+                  <tr key={u.id}>
+                    <td className="mono text-indigo font-semibold">
+                      #{u.id}
+                    </td>
                   <td>
                     <b>{u.name}</b>
                   </td>
@@ -296,75 +296,40 @@ export default function Settings() {
                   </td>
                   <td>
                     {u.role === 'OWNER' ? (
-                      <span
-                        className="badge"
-                        style={{
-                          background: '#ecfdf5',
-                          color: '#065f46',
-                          border: '1px solid #a7f3d0',
-                          fontWeight: 600,
-                        }}
-                      >
+                      <span className="badge bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
                         ⭐ All Modules (Owner)
                       </span>
                     ) : activeModules.length === 0 ? (
-                      <span className="muted" style={{ fontSize: 12 }}>
+                      <span className="muted text-xs">
                         Payslips only (Employee)
                       </span>
                     ) : (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                        {activeModules.map(m => (
-                          <span
-                            key={m.key}
-                            className="badge"
-                            style={{
-                              fontSize: 11,
-                              padding: '2px 7px',
-                              borderRadius: 4,
-                              background:
-                                m.key === 'sales'
-                                  ? '#eff6ff'
-                                  : m.key === 'purchases'
-                                  ? '#f0fdf4'
-                                  : m.key === 'accounting'
-                                  ? '#fffbeb'
-                                  : m.key === 'payroll'
-                                  ? '#fdf2f8'
-                                  : '#faf5ff',
-                              color:
-                                m.key === 'sales'
-                                  ? '#1d4ed8'
-                                  : m.key === 'purchases'
-                                  ? '#15803d'
-                                  : m.key === 'accounting'
-                                  ? '#b45309'
-                                  : m.key === 'payroll'
-                                  ? '#be185d'
-                                  : '#7e22ce',
-                              border:
-                                m.key === 'sales'
-                                  ? '1px solid #bfdbfe'
-                                  : m.key === 'purchases'
-                                  ? '1px solid #bbf7d0'
-                                  : m.key === 'accounting'
-                                  ? '1px solid #fde68a'
-                                  : m.key === 'payroll'
-                                  ? '1px solid #fbcfe8'
-                                  : '1px solid #e9d5ff',
-                            }}
-                          >
-                            {m.label}
-                          </span>
-                        ))}
+                      <div className="flex flex-wrap gap-1.5">
+                        {activeModules.map(m => {
+                          const modColorMap: Record<string, string> = {
+                            sales: 'bg-blue-50 text-blue-700 border-blue-200',
+                            purchases: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                            accounting: 'bg-amber-50 text-amber-800 border-amber-200',
+                            payroll: 'bg-pink-50 text-pink-700 border-pink-200',
+                            reports: 'bg-purple-50 text-purple-700 border-purple-200',
+                          };
+                          return (
+                            <span
+                              key={m.key}
+                              className={`badge text-[11px] py-0.5 px-2 rounded border font-medium ${modColorMap[m.key] || 'bg-slate-50 text-slate-700 border-slate-200'}`}
+                            >
+                              {m.label}
+                            </span>
+                          );
+                        })}
                       </div>
                     )}
                   </td>
-                  <td className="right" style={{ whiteSpace: 'nowrap' }}>
+                  <td className="right whitespace-nowrap">
                     {owner && (
-                      <div className="row" style={{ justifyContent: 'flex-end', gap: 6 }}>
+                      <div className="row justify-end gap-1.5">
                         <button
-                          className="btn sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                          className="btn sm inline-flex items-center gap-1.5"
                           onClick={() => {
                             setEditAccessMember(u);
                             setAccessRole(u.role);
@@ -406,10 +371,11 @@ export default function Settings() {
             })}
           </tbody>
         </table>
+        </div>
 
         {owner && (
           <>
-            <h4 style={{ marginTop: 24, marginBottom: 8 }}>Add or update team member</h4>
+            <h4 className="mt-6 mb-2">Add or update team member</h4>
             <div className="form">
               <Field label="Email address">
                 <input
@@ -449,35 +415,21 @@ export default function Settings() {
             </div>
 
             {m.role !== 'OWNER' && (
-              <div
-                style={{
-                  background: 'var(--bg)',
-                  border: '1px solid var(--line)',
-                  borderRadius: 8,
-                  padding: '14px 16px',
-                  marginTop: 12,
-                }}
-              >
-                <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--navy)', marginBottom: 8 }}>
+              <div className="bg-slate-50 border border-surface-line rounded-lg p-4 mt-3">
+                <div className="font-semibold text-[13px] text-navy mb-2">
                   Module Permissions to Grant:
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2.5">
                   {MODULE_DEFS.map(mod => {
                     const checked = !!m.permissions?.[mod.key];
                     return (
                       <label
                         key={mod.key}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: 8,
-                          cursor: 'pointer',
-                          fontSize: 13,
-                        }}
+                        className="flex items-start gap-2 cursor-pointer text-[13px]"
                       >
                         <input
                           type="checkbox"
-                          style={{ width: 'auto', marginTop: 3 }}
+                          className="w-auto mt-1"
                           checked={checked}
                           onChange={e =>
                             setM({
@@ -491,7 +443,7 @@ export default function Settings() {
                         />
                         <div>
                           <b>{mod.label}</b>
-                          <div className="muted" style={{ fontSize: 11 }}>
+                          <div className="muted text-[11px]">
                             {mod.desc}
                           </div>
                         </div>
@@ -503,8 +455,7 @@ export default function Settings() {
             )}
 
             <Btn
-              className="btn primary"
-              style={{ marginTop: 14 }}
+              className="btn primary mt-3.5"
               loading={busyKey === 'save_member'}
               loadingText="Saving member..."
               onClick={() =>
@@ -523,11 +474,11 @@ export default function Settings() {
           title={`Module Access Permissions: ${editAccessMember.name}`}
           onClose={() => setEditAccessMember(null)}
         >
-          <p className="muted" style={{ marginTop: 0, marginBottom: 16 }}>
+          <p className="muted mt-0 mb-4">
             Configure which specific modules <b>{editAccessMember.name}</b> ({editAccessMember.email}) can see and access in LedgerPilot.
           </p>
 
-          <div className="form" style={{ marginBottom: 16 }}>
+          <div className="form mb-4">
             <Field label="Assigned Role">
               <select
                 value={accessRole}
@@ -546,11 +497,11 @@ export default function Settings() {
             </Field>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-[13px] font-bold text-navy">
               Accessible Modules:
             </span>
-            <div className="row" style={{ gap: 6 }}>
+            <div className="row gap-1.5">
               <button
                 type="button"
                 className="btn sm"
@@ -581,38 +532,18 @@ export default function Settings() {
             </div>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
-              background: 'var(--bg)',
-              border: '1px solid var(--line)',
-              borderRadius: 8,
-              padding: 14,
-            }}
-          >
+          <div className="flex flex-col gap-2.5 bg-slate-50 border border-surface-line rounded-lg p-3.5">
             {MODULE_DEFS.map(mod => {
               const checked = !!accessPerms[mod.key];
               return (
                 <label
                   key={mod.key}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 10,
-                    cursor: accessRole === 'OWNER' ? 'not-allowed' : 'pointer',
-                    padding: '8px 10px',
-                    borderRadius: 6,
-                    background: checked ? 'var(--white)' : 'transparent',
-                    border: checked ? '1px solid var(--line)' : '1px solid transparent',
-                    transition: 'all 0.15s ease',
-                  }}
+                  className={`flex items-start gap-2.5 p-2 rounded-md transition-all ${checked ? 'bg-white border border-surface-line' : 'border border-transparent'} ${accessRole === 'OWNER' ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <input
                     type="checkbox"
                     disabled={accessRole === 'OWNER'}
-                    style={{ width: 'auto', marginTop: 3 }}
+                    className="w-auto mt-1"
                     checked={accessRole === 'OWNER' ? true : checked}
                     onChange={e =>
                       setAccessPerms({
@@ -621,11 +552,11 @@ export default function Settings() {
                       })
                     }
                   />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--navy)' }}>
+                  <div className="flex-1">
+                    <div className="font-semibold text-[13px] text-navy">
                       {mod.label} Module
                     </div>
-                    <div className="muted" style={{ fontSize: 12 }}>
+                    <div className="muted text-xs">
                       {mod.desc}
                     </div>
                   </div>
@@ -634,7 +565,7 @@ export default function Settings() {
             })}
           </div>
 
-          <div className="row" style={{ justifyContent: 'flex-end', marginTop: 20, gap: 10 }}>
+          <div className="row justify-end mt-5 gap-2.5">
             <button
               type="button"
               className="btn"
@@ -711,8 +642,7 @@ export default function Settings() {
           </Field>
         </div>
         <Btn
-          className="btn"
-          style={{ marginTop: 14 }}
+          className="btn mt-3.5"
           loading={busyKey === 'create_co'}
           loadingText="Creating company & switching..."
           onClick={() =>

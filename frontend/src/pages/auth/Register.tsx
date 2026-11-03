@@ -65,9 +65,13 @@ export default function Register() {
         <div className="auth-card">
           {/* Header */}
           <div className="auth-header">
-            <div className="auth-logo-badge">
-              <Layers size={22} strokeWidth={2.4} />
-            </div>
+            <img
+              src="/logo.png"
+              alt="LedgerPilot"
+              width={44}
+              height={44}
+              className="auth-logo"
+            />
             <h1 className="auth-title">Set up your company</h1>
             <p className="auth-subtitle">
               Provision a complete double-entry chart of accounts customized to your industry.
@@ -82,19 +86,19 @@ export default function Register() {
           {/* Error */}
           {err && (
             <div className="err" role="alert">
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <AlertCircle size={16} className="shrink-0" />
               <span>{err}</span>
             </div>
           )}
 
           {/* Form */}
           <form onSubmit={handleRegister}>
-            <div className="grid g2" style={{ gap: 14, marginBottom: 14 }}>
-              <div className="auth-input-group" style={{ marginBottom: 0 }}>
+            <div className="auth-grid-2">
+              <div className="auth-input-group">
                 <label htmlFor="reg-name">Your full name *</label>
                 <div className="auth-input-wrap">
                   <span className="auth-input-icon">
-                    <User size={16} />
+                    <User size={15} />
                   </span>
                   <input
                     id="reg-name"
@@ -107,11 +111,11 @@ export default function Register() {
                 </div>
               </div>
 
-              <div className="auth-input-group" style={{ marginBottom: 0 }}>
+              <div className="auth-input-group">
                 <label htmlFor="reg-email">Email address *</label>
                 <div className="auth-input-wrap">
                   <span className="auth-input-icon">
-                    <Mail size={16} />
+                    <Mail size={15} />
                   </span>
                   <input
                     id="reg-email"
@@ -120,18 +124,16 @@ export default function Register() {
                     className="auth-input"
                     value={f.email}
                     onChange={set('email')}
-                    placeholder="naveen@company.com"
+                    placeholder="owner@company.com"
                   />
                 </div>
               </div>
-            </div>
 
-            <div className="grid g2" style={{ gap: 14, marginBottom: 14 }}>
-              <div className="auth-input-group" style={{ marginBottom: 0 }}>
+              <div className="auth-input-group">
                 <label htmlFor="reg-company">Company name *</label>
                 <div className="auth-input-wrap">
                   <span className="auth-input-icon">
-                    <Building2 size={16} />
+                    <Building2 size={15} />
                   </span>
                   <input
                     id="reg-company"
@@ -139,16 +141,16 @@ export default function Register() {
                     className="auth-input"
                     value={f.company_name}
                     onChange={set('company_name')}
-                    placeholder="Bluepeak Technologies Pvt Ltd"
+                    placeholder="LedgerPilot Technologies Pvt Ltd"
                   />
                 </div>
               </div>
 
-              <div className="auth-input-group" style={{ marginBottom: 0 }}>
+              <div className="auth-input-group">
                 <label htmlFor="reg-industry">Industry *</label>
                 <div className="auth-input-wrap">
                   <span className="auth-input-icon">
-                    <Briefcase size={16} />
+                    <Briefcase size={15} />
                   </span>
                   <select
                     id="reg-industry"
@@ -164,14 +166,12 @@ export default function Register() {
                   </select>
                 </div>
               </div>
-            </div>
 
-            <div className="grid g2" style={{ gap: 14, marginBottom: 20 }}>
-              <div className="auth-input-group" style={{ marginBottom: 0 }}>
+              <div className="auth-input-group">
                 <label htmlFor="reg-state">GST State *</label>
                 <div className="auth-input-wrap">
                   <span className="auth-input-icon">
-                    <MapPin size={16} />
+                    <MapPin size={15} />
                   </span>
                   <select
                     id="reg-state"
@@ -188,22 +188,21 @@ export default function Register() {
                 </div>
               </div>
 
-              <div className="auth-input-group" style={{ marginBottom: 0 }}>
+              <div className="auth-input-group">
                 <label htmlFor="reg-password">Password (min. 8 characters) *</label>
                 <div className="auth-input-wrap">
                   <span className="auth-input-icon">
-                    <Lock size={16} />
+                    <Lock size={15} />
                   </span>
                   <input
                     id="reg-password"
                     type={showPassword ? 'text' : 'password'}
                     required
                     minLength={8}
-                    className="auth-input"
+                    className="auth-input pr-10"
                     value={f.password}
                     onChange={set('password')}
                     placeholder="••••••••"
-                    style={{ paddingRight: 38 }}
                   />
                   <button
                     type="button"
@@ -212,7 +211,7 @@ export default function Register() {
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
                 </div>
               </div>
@@ -238,9 +237,9 @@ export default function Register() {
           </form>
 
           {/* Footer */}
-          <p className="muted" style={{ textAlign: 'center', marginTop: 22, fontSize: 13 }}>
+          <p className="muted text-center mt-3.5 mb-0 text-[12.5px]">
             Already have an account?{' '}
-            <Link to="/login" style={{ fontWeight: 600, color: 'var(--indigo)' }}>
+            <Link to="/login" className="font-semibold text-indigo">
               Sign in →
             </Link>
           </p>

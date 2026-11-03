@@ -61,11 +61,15 @@ export default function Login() {
         <div className="auth-card">
           {/* Header & Brand */}
           <div className="auth-header">
-            <div className="auth-logo-badge">
-              <Layers size={22} strokeWidth={2.4} />
-            </div>
+            <img
+              src="/logo.png"
+              alt="LedgerPilot"
+              width={46}
+              height={46}
+              className="auth-logo"
+            />
             <h1 className="auth-title">
-              Ledger<span style={{ color: 'var(--pink)' }}>Pilot</span>
+              Ledger<span className="text-indigo">Pilot</span>
             </h1>
             <p className="auth-subtitle">
               Enterprise accounting, GST compliance, banking &amp; payroll
@@ -75,7 +79,7 @@ export default function Login() {
           {/* Error Message */}
           {err && (
             <div className="err" role="alert">
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <AlertCircle size={16} className="shrink-0" />
               <span>{err}</span>
             </div>
           )}
@@ -101,8 +105,8 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="auth-input-group" style={{ marginBottom: 20 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="auth-input-group mb-5">
+              <div className="flex justify-between items-center">
                 <label htmlFor="login-password">Password</label>
               </div>
               <div className="auth-input-wrap">
@@ -113,12 +117,11 @@ export default function Login() {
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="auth-input"
+                  className="auth-input pr-9.5"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  style={{ paddingRight: 38 }}
                 />
                 <button
                   type="button"
@@ -154,9 +157,9 @@ export default function Login() {
 
 
           {/* Footer */}
-          <p className="muted" style={{ textAlign: 'center', marginTop: 22, fontSize: 13 }}>
+          <p className="muted text-center mt-5.5 text-[13px]">
             New company?{' '}
-            <Link to="/register" style={{ fontWeight: 600, color: 'var(--indigo)' }}>
+            <Link to="/register" className="font-semibold text-indigo">
               Create an account →
             </Link>
           </p>
