@@ -7,12 +7,12 @@ INSERT INTO users(name,email,password_hash) VALUES
  ('Statutory Auditor','auditor@fin.local',crypt('Admin@123',gen_salt('bf',10))),
  ('Priya Verma','employee@fin.local',crypt('Admin@123',gen_salt('bf',10)));
 
-SELECT create_company('Bluepeak Technologies Pvt Ltd','IT_SOFTWARE','23',1);   -- company 1
+SELECT create_company('LedgerFinance Technologies Pvt Ltd','IT_SOFTWARE','23',1);   -- company 1
 SELECT create_company('Sunrise Retail Mart','RETAIL','23',1);                    -- company 2 (different industry COA)
 INSERT INTO memberships VALUES (1,2,'ACCOUNTANT'),(1,3,'HR'),(1,4,'AUDITOR'),(1,5,'EMPLOYEE'),(2,2,'ACCOUNTANT');
 UPDATE users SET last_company_id = 1;
-UPDATE companies SET legal_name='Bluepeak Technologies Private Limited', gstin='23AAACB1234C1Z5', pan='AAACB1234C',
-  address='Plot 12, IT Park, Pardesipura, Indore, Madhya Pradesh 452010', email='accounts@bluepeak.example', phone='0731-4000000' WHERE id=1;
+UPDATE companies SET legal_name='LedgerFinance Technologies Private Limited', gstin='23AAACB1234C1Z5', pan='AAACB1234C',
+  address='Plot 12, IT Park, Pardesipura, Indore, Madhya Pradesh 452010', email='accounts@LedgerFinance.example', phone='0731-4000000' WHERE id=1;
 UPDATE companies SET gstin='23AAGCS7788K1Z2', address='MG Road, Satna, Madhya Pradesh 485001' WHERE id=2;
 UPDATE accounts SET name='HDFC Bank – Current A/c', bank_name='HDFC Bank', bank_acc_last4='4417', ifsc='HDFC0001234' WHERE company_id=1 AND code='1110';
 INSERT INTO accounts(company_id,code,name,type,subtype,bank_name,bank_acc_last4) VALUES (1,'1111','ICICI Bank – Payroll A/c','ASSET','BANK','ICICI Bank','9021');

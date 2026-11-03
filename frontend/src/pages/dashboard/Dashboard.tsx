@@ -39,7 +39,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-3.5">
           <img
             src="/logo.png"
-            alt="Bluepeak"
+            alt="LedgerFinance"
             width={40}
             height={40}
             className="topbar-logo"

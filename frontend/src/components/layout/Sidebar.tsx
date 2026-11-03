@@ -97,13 +97,13 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
         <div className="brand-wrapper">
           <img
             src="/logo.png"
-            alt="Bluepeak"
+            alt="LedgerFinance"
             width={32}
             height={32}
             className="app-brand-logo"
           />
           <div className="brand-text">
-            Blue<span>peak</span>
+            Ledger<span>Pilot</span>
           </div>
           <span className="brand-badge">PRO</span>
           {onClose && (
@@ -118,91 +118,91 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
           )}
         </div>
 
-      {/* Active Session & Company */}
-      <SessionBox />
+        {/* Active Session & Company */}
+        <SessionBox />
 
-      {/* Navigation Sections */}
-      <nav className="sidebar-nav">
-        {canAccess('dashboard') && (
+        {/* Navigation Sections */}
+        <nav className="sidebar-nav">
+          {canAccess('dashboard') && (
+            <div className="side-section">
+              <div className="side-section-title">Overview</div>
+              <div className="side-links-group">
+                <NavItem to="/" icon={LayoutDashboard} label="Dashboard" end />
+              </div>
+            </div>
+          )}
+
+          {canAccess('sales') && (
+            <div className="side-section">
+              <div className="side-section-title">Sales</div>
+              <div className="side-links-group">
+                <NavItem to="/docs/sales" icon={FileText} label="Sales invoices" />
+                <NavItem to="/docs/credit-notes" icon={FileMinus} label="Credit notes" />
+                <NavItem to="/vouchers?kind=RECEIPT" icon={Receipt} label="Receipts" />
+                <NavItem to="/parties?kind=CUSTOMER" icon={Users} label="Customers" />
+              </div>
+            </div>
+          )}
+
+          {canAccess('purchases') && (
+            <div className="side-section">
+              <div className="side-section-title">Purchases</div>
+              <div className="side-links-group">
+                <NavItem to="/docs/purchases" icon={ShoppingBag} label="Purchase bills" />
+                <NavItem to="/docs/debit-notes" icon={FilePlus} label="Debit notes" />
+                <NavItem to="/vouchers?kind=PAYMENT" icon={CreditCard} label="Payments" />
+                <NavItem to="/parties?kind=VENDOR" icon={Building2} label="Vendors" />
+              </div>
+            </div>
+          )}
+
+          {canAccess('accounting') && (
+            <div className="side-section">
+              <div className="side-section-title">Accounting</div>
+              <div className="side-links-group">
+                <NavItem to="/accounts" icon={BookOpen} label="Chart of accounts" />
+                <NavItem to="/journals" icon={BookText} label="Journal entries" />
+                <NavItem to="/banking" icon={Landmark} label="Bank reconciliation" />
+                <NavItem to="/assets" icon={Coins} label="Fixed assets" />
+                <NavItem to="/items" icon={Package} label="Items & services" />
+              </div>
+            </div>
+          )}
+
+          {canAccess('payroll') && (
+            <div className="side-section">
+              <div className="side-section-title">Payroll</div>
+              <div className="side-links-group">
+                <NavItem to="/payroll" icon={Banknote} label="Payroll runs" />
+                <NavItem to="/employees" icon={UserCheck} label="Employees" />
+              </div>
+            </div>
+          )}
+
+          {canAccess('reports') && (
+            <div className="side-section">
+              <div className="side-section-title">Reports</div>
+              <div className="side-links-group">
+                <NavItem to="/reports" icon={BarChart3} label="Financial statements" end />
+                <NavItem to="/reports/ledger" icon={ListTree} label="Ledgers" />
+                <NavItem to="/reports/ageing" icon={Clock} label="Ageing" />
+                <NavItem to="/reports/gst" icon={Percent} label="GST returns" />
+                <NavItem to="/reports/daybook" icon={CalendarDays} label="Day book" />
+              </div>
+            </div>
+          )}
+
           <div className="side-section">
-            <div className="side-section-title">Overview</div>
+            <div className="side-section-title">Account</div>
             <div className="side-links-group">
-              <NavItem to="/" icon={LayoutDashboard} label="Dashboard" end />
+              <NavItem to="/me/payslips" icon={Wallet} label="My payslips" />
+              {(role === 'OWNER' || role === 'ACCOUNTANT' || role === 'HR') && (
+                <NavItem to="/settings" icon={Settings} label="Company & team" />
+              )}
             </div>
           </div>
-        )}
-
-        {canAccess('sales') && (
-          <div className="side-section">
-            <div className="side-section-title">Sales</div>
-            <div className="side-links-group">
-              <NavItem to="/docs/sales" icon={FileText} label="Sales invoices" />
-              <NavItem to="/docs/credit-notes" icon={FileMinus} label="Credit notes" />
-              <NavItem to="/vouchers?kind=RECEIPT" icon={Receipt} label="Receipts" />
-              <NavItem to="/parties?kind=CUSTOMER" icon={Users} label="Customers" />
-            </div>
-          </div>
-        )}
-
-        {canAccess('purchases') && (
-          <div className="side-section">
-            <div className="side-section-title">Purchases</div>
-            <div className="side-links-group">
-              <NavItem to="/docs/purchases" icon={ShoppingBag} label="Purchase bills" />
-              <NavItem to="/docs/debit-notes" icon={FilePlus} label="Debit notes" />
-              <NavItem to="/vouchers?kind=PAYMENT" icon={CreditCard} label="Payments" />
-              <NavItem to="/parties?kind=VENDOR" icon={Building2} label="Vendors" />
-            </div>
-          </div>
-        )}
-
-        {canAccess('accounting') && (
-          <div className="side-section">
-            <div className="side-section-title">Accounting</div>
-            <div className="side-links-group">
-              <NavItem to="/accounts" icon={BookOpen} label="Chart of accounts" />
-              <NavItem to="/journals" icon={BookText} label="Journal entries" />
-              <NavItem to="/banking" icon={Landmark} label="Bank reconciliation" />
-              <NavItem to="/assets" icon={Coins} label="Fixed assets" />
-              <NavItem to="/items" icon={Package} label="Items & services" />
-            </div>
-          </div>
-        )}
-
-        {canAccess('payroll') && (
-          <div className="side-section">
-            <div className="side-section-title">Payroll</div>
-            <div className="side-links-group">
-              <NavItem to="/payroll" icon={Banknote} label="Payroll runs" />
-              <NavItem to="/employees" icon={UserCheck} label="Employees" />
-            </div>
-          </div>
-        )}
-
-        {canAccess('reports') && (
-          <div className="side-section">
-            <div className="side-section-title">Reports</div>
-            <div className="side-links-group">
-              <NavItem to="/reports" icon={BarChart3} label="Financial statements" end />
-              <NavItem to="/reports/ledger" icon={ListTree} label="Ledgers" />
-              <NavItem to="/reports/ageing" icon={Clock} label="Ageing" />
-              <NavItem to="/reports/gst" icon={Percent} label="GST returns" />
-              <NavItem to="/reports/daybook" icon={CalendarDays} label="Day book" />
-            </div>
-          </div>
-        )}
-
-        <div className="side-section">
-          <div className="side-section-title">Account</div>
-          <div className="side-links-group">
-            <NavItem to="/me/payslips" icon={Wallet} label="My payslips" />
-            {(role === 'OWNER' || role === 'ACCOUNTANT' || role === 'HR') && (
-              <NavItem to="/settings" icon={Settings} label="Company & team" />
-            )}
-          </div>
-        </div>
-      </nav>
-    </aside>
-  </>
-);
+        </nav>
+      </aside>
+    </>
+  );
 }

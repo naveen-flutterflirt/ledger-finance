@@ -16,13 +16,13 @@ export default function AppLayout() {
           <div className="brand-wrapper">
             <img
               src="/logo.png"
-              alt="Bluepeak"
+              alt="LedgerFinance"
               width={32}
               height={32}
               className="app-brand-logo"
             />
             <div className="brand-text">
-              Blue<span>peak</span>
+              Ledger<span>Pilot</span>
             </div>
           </div>
           <div className="px-1 pb-4">
@@ -61,13 +61,13 @@ export default function AppLayout() {
         <div className="mobile-brand">
           <img
             src="/logo.png"
-            alt="Bluepeak"
+            alt="LedgerFinance"
             width={26}
             height={26}
             className="mobile-brand-logo"
           />
           <span className="brand-text">
-            Blue<span>peak</span>
+            Ledger<span>Pilot</span>
           </span>
         </div>
         <div className="mobile-header-meta">

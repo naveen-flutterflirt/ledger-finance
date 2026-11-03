@@ -10,7 +10,7 @@ export default function SessionBox() {
 
   const displayName = user?.name || 'Naveen (Owner)';
   const displayRole = role || 'OWNER';
-  const displayCompany = company?.name || 'Bluepeak Technologies';
+  const displayCompany = company?.name || 'LedgerFinance Technologies';
   const displayCompanyId = company?.id ?? 1;
 
   return (
