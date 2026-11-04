@@ -55,9 +55,12 @@ export class PayrollService {
     let esiE = 0;
     let esiR = 0;
 
+    // Statutory ESI Wage Base: excludes one-time / discretionary bonuses per ESIC guidelines (Sec 2(22))
+    const esiWage = regular;
+
     if (e.esi_applicable && monthlyRate <= s.esi_ceiling) {
-      esiE = Math.ceil((gross * s.esi_employee_rate) / 100);
-      esiR = Math.ceil((gross * s.esi_employer_rate) / 100);
+      esiE = Math.ceil((esiWage * s.esi_employee_rate) / 100);
+      esiR = Math.ceil((esiWage * s.esi_employer_rate) / 100);
     }
 
     const pt = e.pt_applicable
