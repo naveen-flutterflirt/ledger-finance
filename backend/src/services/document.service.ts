@@ -416,5 +416,71 @@ export class DocumentService {
 
     return this.getDoc(companyId, id);
   }
+
+  static async deleteDoc(companyId: number, uid: number, id: number) {
+    return tx(async c => {
+      const { rows: [inv] } = await c.query(
+        `SELECT * FROM invoices WHERE id = $1 AND company_id = $2 FOR UPDATE`,
+        [id, companyId]
+      );
+      if (!inv) throw new HttpError(404, 'Document not found');
+
+      // Check if payments or credit notes are applied
+      const { rows: [s] } = await c.query(
+        `SELECT COUNT(*)::int n FROM allocations WHERE invoice_id = $1 AND (note_id IS NULL OR note_id <> $1)`,
+        [id]
+      );
+      if (s && s.n > 0) {
+        throw new HttpError(
+          422,
+          'Payments or credit notes are applied to this document; cancel or unallocate those first'
+        );
+      }
+
+      // Check if any credit/debit notes are issued against this invoice
+      const { rows: [notes] } = await c.query(
+        `SELECT COUNT(*)::int n FROM invoices WHERE against_id = $1 AND status <> 'CANCELLED'`,
+        [id]
+      );
+      if (notes && notes.n > 0) {
+        throw new HttpError(422, 'Active credit or debit notes are linked against this invoice');
+      }
+
+      // If document was posted and has a journal entry, reverse the journal entry first
+      if (inv.status === 'POSTED' && inv.journal_entry_id) {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const effectiveDate = todayStr < inv.doc_date ? inv.doc_date : todayStr;
+        await LedgerService.reverseJournal(
+          c,
+          companyId,
+          uid,
+          Number(inv.journal_entry_id),
+          effectiveDate,
+          `Reversal on deletion of document ${inv.doc_no || '#' + inv.id}`
+        );
+      }
+
+      // Delete any allocations where note_id = id or invoice_id = id
+      const { rows: applied } = await c.query(
+        `DELETE FROM allocations WHERE note_id = $1 OR invoice_id = $1 RETURNING invoice_id`,
+        [id]
+      );
+
+      // Delete invoice lines
+      await c.query(`DELETE FROM invoice_lines WHERE invoice_id = $1`, [id]);
+
+      // Delete the invoice
+      await c.query(`DELETE FROM invoices WHERE id = $1 AND company_id = $2`, [id, companyId]);
+
+      // Recompute status of any target invoices if needed
+      for (const a of applied) {
+        if (a.invoice_id && a.invoice_id !== id) {
+          await c.query(`SELECT recompute_invoice_status($1)`, [a.invoice_id]);
+        }
+      }
+
+      return { ok: true, id, doc_no: inv.doc_no };
+    });
+  }
 }
 

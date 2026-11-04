@@ -13,6 +13,7 @@ router.get('/docs/:kind/:id', requireRole(...FIN_READ), DocumentController.getOn
 router.put('/docs/:kind/:id', requireRole(...FIN_WRITE), DocumentController.updateDraft);
 router.post('/docs/:kind/:id/post', requireRole(...FIN_WRITE), DocumentController.postDoc);
 router.post('/docs/:kind/:id/cancel', requireRole(...FIN_WRITE), DocumentController.cancelDoc);
+router.delete('/docs/:kind/:id', requireRole(...FIN_WRITE), DocumentController.deleteDoc);
 
 export default router;
 

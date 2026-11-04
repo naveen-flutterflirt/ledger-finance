@@ -67,5 +67,14 @@ export class DocumentController {
     );
     res.json(doc);
   }
+
+  static async deleteDoc(req: Request, res: Response) {
+    const result = await DocumentService.deleteDoc(
+      req.session!.companyId,
+      req.session!.uid,
+      Number(req.params.id)
+    );
+    res.json(result);
+  }
 }
 

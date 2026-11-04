@@ -7,6 +7,7 @@ import { apiCall, useData } from '../../api/client.js';
 import { useToast } from '../../context/ToastContext.js';
 import { fmtDate, inr2, words } from '../../utils/format.js';
 import { DocViewSkeleton } from '../../components/common/Skeleton.js';
+import { Trash2 } from 'lucide-react';
 
 export default function DocView() {
   const { kind = 'sales', id } = useParams<{ kind: string; id: string }>();
@@ -118,6 +119,32 @@ export default function DocView() {
             </button>
           )}
 
+          <button
+            type="button"
+            className="btn ghost-red inline-flex items-center gap-1"
+            onClick={async () => {
+              if (
+                window.confirm(
+                  `Are you sure you want to permanently delete ${meta.one} ${
+                    d.doc_no || '#' + d.id
+                  }?`
+                )
+              ) {
+                try {
+                  await apiCall(`/api/docs/${kind}/${d.id}`, 'DELETE');
+                  toast.success(`${meta.one} deleted successfully`);
+                  navigate(`/docs/${kind}`);
+                } catch (e: any) {
+                  toast.error(e.message || 'Failed to delete');
+                }
+              }
+            }}
+            title={`Delete ${meta.one.toLowerCase()}`}
+          >
+            <Trash2 size={13} />
+            <span>Delete</span>
+          </button>
+
           {['POSTED', 'PARTIAL'].includes(d.status) && !meta?.againstKind && (
             <Link
               className="btn green"
@@ -134,20 +161,19 @@ export default function DocView() {
       </div>
 
       <div className="invoice">
-        <div className="row items-start">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
-            <h2>{d.company?.legal_name ?? d.company?.name}</h2>
-            <div className="muted max-w-md">
+            <h2 className="text-xl font-extrabold text-navy m-0">{d.company?.legal_name ?? d.company?.name}</h2>
+            <div className="muted max-w-md text-xs sm:text-sm mt-1 leading-relaxed">
               {d.company?.address}
             </div>
-            <div className="mt-1">
-              GSTIN <b className="mono">{d.company?.gstin ?? '—'}</b> · PAN {d.company?.pan ?? '—'}
+            <div className="mt-1 text-xs sm:text-sm">
+              GSTIN <b className="mono font-semibold">{d.company?.gstin ?? '—'}</b> · PAN {d.company?.pan ?? '—'}
             </div>
           </div>
-          <div className="spacer" />
-          <div className="right">
-            <h2 className="text-pink">{title}</h2>
-            <table className="meta w-auto ml-auto">
+          <div className="sm:text-right shrink-0">
+            <h2 className="text-pink text-lg sm:text-xl font-bold uppercase tracking-wider m-0">{title}</h2>
+            <table className="meta w-auto sm:ml-auto text-xs sm:text-sm mt-1">
               <tbody>
                 <tr>
                   <td className="muted">No.</td>
@@ -188,134 +214,134 @@ export default function DocView() {
 
         <hr className="border-0 border-t border-surface-line my-4.5" />
 
-        <div>
-          <div className="muted">{meta?.sales ? 'Bill to' : 'Supplier'}</div>
-          <b className="text-base font-bold">{d.party_name}</b>
-          <div className="muted">{d.party_address}</div>
-          <div>
-            GSTIN <span className="mono">{d.party_gstin ?? 'Unregistered'}</span> · State{' '}
+        <div className="text-xs sm:text-sm">
+          <div className="muted text-xs uppercase tracking-wider">{meta?.sales ? 'Bill to' : 'Supplier'}</div>
+          <b className="text-base font-bold text-slate-900 block mt-0.5">{d.party_name}</b>
+          <div className="muted text-xs sm:text-sm mt-0.5 leading-relaxed">{d.party_address}</div>
+          <div className="mt-1">
+            GSTIN <span className="mono font-semibold">{d.party_gstin ?? 'Unregistered'}</span> · State{' '}
             {d.party_state ?? '—'}
           </div>
         </div>
 
-        <table className="mt-4.5">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Description</th>
-              <th>HSN/SAC</th>
-              <th className="num">Qty</th>
-              <th className="num">Rate</th>
-              <th className="num">Taxable</th>
-              <th className="num">GST %</th>
-              {inter ? (
-                <th className="num">IGST</th>
-              ) : (
-                <>
-                  <th className="num">CGST</th>
-                  <th className="num">SGST</th>
-                </>
-              )}
-              <th className="num">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {d.lines?.map((l: any, i: number) => (
-              <tr key={l.id}>
-                <td>{i + 1}</td>
-                <td>
-                  {l.description}
-                  <div className="muted text-[11px]">
-                    {l.account_code} {l.account_name}
-                  </div>
-                </td>
-                <td className="mono">{l.hsn_sac}</td>
-                <td className="num">{Number(l.qty)}</td>
-                <td className="num">{inr2(l.rate)}</td>
-                <td className="num">{inr2(l.taxable)}</td>
-                <td className="num">{l.gst_rate}%</td>
+        {/* Invoice Table Container */}
+        <div className="invoice-table-wrapper w-full overflow-x-auto my-4.5 rounded-lg border border-slate-200">
+          <table className="invoice-items-table w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                <th className="col-idx">#</th>
+                <th className="col-desc">Description</th>
+                <th className="col-hsn">HSN/SAC</th>
+                <th className="col-qty num">Qty</th>
+                <th className="col-rate num">Rate</th>
+                <th className="col-taxable num">Taxable</th>
+                <th className="col-gst num">GST %</th>
                 {inter ? (
-                  <td className="num">{inr2(l.igst)}</td>
+                  <th className="col-tax num">IGST</th>
                 ) : (
                   <>
-                    <td className="num">{inr2(l.cgst)}</td>
-                    <td className="num">{inr2(l.sgst)}</td>
+                    <th className="col-tax num">CGST</th>
+                    <th className="col-tax num">SGST</th>
                   </>
                 )}
-                <td className="num">
-                  {inr2(
-                    Number(l.taxable) +
-                      Number(l.cgst) +
-                      Number(l.sgst) +
-                      Number(l.igst)
-                  )}
-                </td>
+                <th className="col-amt num">Amount</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {d.lines?.map((l: any, i: number) => (
+                <tr key={l.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="col-idx text-slate-400">{i + 1}</td>
+                  <td className="col-desc">
+                    <span className="font-semibold text-slate-800 block">{l.description}</span>
+                    <div className="muted text-[11px] text-slate-400 mt-0.5">
+                      {l.account_code} {l.account_name}
+                    </div>
+                  </td>
+                  <td className="col-hsn mono text-slate-600">{l.hsn_sac}</td>
+                  <td className="col-qty num text-slate-700">{Number(l.qty)}</td>
+                  <td className="col-rate num text-slate-700">{inr2(l.rate)}</td>
+                  <td className="col-taxable num text-slate-700">{inr2(l.taxable)}</td>
+                  <td className="col-gst num text-slate-600">{l.gst_rate}%</td>
+                  {inter ? (
+                    <td className="col-tax num text-slate-700">{inr2(l.igst)}</td>
+                  ) : (
+                    <>
+                      <td className="col-tax num text-slate-700">{inr2(l.cgst)}</td>
+                      <td className="col-tax num text-slate-700">{inr2(l.sgst)}</td>
+                    </>
+                  )}
+                  <td className="col-amt num font-bold text-slate-900">
+                    {inr2(
+                      Number(l.taxable) +
+                        Number(l.cgst) +
+                        Number(l.sgst) +
+                        Number(l.igst)
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-        <div className="row items-start mt-4">
-          <div className="max-w-md">
-            <div className="muted">Amount in words:</div>
-            <b>Rupees {words(d.total)} Only</b>
-            {d.notes && <p className="muted mt-2">{d.notes}</p>}
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mt-6 pt-4 border-t border-slate-100">
+          <div className="max-w-md text-xs sm:text-sm">
+            <div className="muted text-xs">Amount in words:</div>
+            <b className="text-sm font-bold text-slate-800">Rupees {words(d.total)} Only</b>
+            {d.notes && <p className="muted mt-2 text-xs leading-relaxed">{d.notes}</p>}
             {d.entry_no && (
-              <p className="muted no-print mt-1">
-                Ledger entry: <Link to={`/journals`}>{d.entry_no}</Link>
+              <p className="muted no-print mt-2 text-xs">
+                Ledger entry: <Link to={`/journals`} className="text-indigo-600 hover:underline">{d.entry_no}</Link>
               </p>
             )}
           </div>
-          <div className="spacer" />
-          <table className="w-80">
-            <tbody>
-              <tr>
-                <td>Taxable value</td>
-                <td className="num">{inr2(d.taxable_value)}</td>
-              </tr>
-              {inter ? (
+          <div className="w-full md:w-80">
+            <table className="invoice-summary-table w-full text-xs sm:text-sm border-collapse">
+              <tbody className="divide-y divide-slate-100">
                 <tr>
-                  <td>IGST</td>
-                  <td className="num">{inr2(d.igst)}</td>
+                  <td className="py-1.5 text-slate-600">Taxable value</td>
+                  <td className="py-1.5 num font-medium text-slate-800">{inr2(d.taxable_value)}</td>
                 </tr>
-              ) : (
-                <>
+                {inter ? (
                   <tr>
-                    <td>CGST</td>
-                    <td className="num">{inr2(d.cgst)}</td>
+                    <td className="py-1.5 text-slate-600">IGST</td>
+                    <td className="py-1.5 num font-medium text-slate-800">{inr2(d.igst)}</td>
                   </tr>
-                  <tr>
-                    <td>SGST</td>
-                    <td className="num">{inr2(d.sgst)}</td>
-                  </tr>
-                </>
-              )}
-              <tr>
-                <td>Round off</td>
-                <td className="num">{inr2(d.round_off)}</td>
-              </tr>
-              <tr className="tot">
-                <td>Total</td>
-                <td className="num">{inr2(d.total)}</td>
-              </tr>
-              {d.status !== 'DRAFT' && (
-                <>
-                  <tr>
-                    <td>Settled</td>
-                    <td className="num">{inr2(d.settled)}</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <b>Balance due</b>
-                    </td>
-                    <td className="num">
-                      <b>{inr2(d.outstanding)}</b>
-                    </td>
-                  </tr>
-                </>
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  <>
+                    <tr>
+                      <td className="py-1.5 text-slate-600">CGST</td>
+                      <td className="py-1.5 num font-medium text-slate-800">{inr2(d.cgst)}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-1.5 text-slate-600">SGST</td>
+                      <td className="py-1.5 num font-medium text-slate-800">{inr2(d.sgst)}</td>
+                    </tr>
+                  </>
+                )}
+                <tr>
+                  <td className="py-1.5 text-slate-600">Round off</td>
+                  <td className="py-1.5 num text-slate-600">{inr2(d.round_off)}</td>
+                </tr>
+                <tr className="tot font-bold text-slate-900 border-t-2 border-slate-200">
+                  <td className="py-2 text-slate-900 font-bold">Total</td>
+                  <td className="py-2 num text-base text-slate-900 font-bold">{inr2(d.total)}</td>
+                </tr>
+                {d.status !== 'DRAFT' && (
+                  <>
+                    <tr>
+                      <td className="py-1.5 text-slate-600">Settled</td>
+                      <td className="py-1.5 num text-emerald-600 font-medium">{inr2(d.settled)}</td>
+                    </tr>
+                    <tr className="font-bold border-t border-slate-100">
+                      <td className="py-2 text-slate-800 font-bold">Balance due</td>
+                      <td className="py-2 num text-slate-900 font-bold">{inr2(d.outstanding)}</td>
+                    </tr>
+                  </>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {d.settlements?.length > 0 && (
